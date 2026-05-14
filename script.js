@@ -1,5 +1,5 @@
 // ========================================
-// B Gmail - script.js (النسخة النهائية مع جميع التعديلات)
+// B Gmail - script.js (النسخة النهائية مع حل مشكلة التسجيل والدخول)
 // ========================================
 
 const API_URL = "https://script.google.com/macros/s/AKfycbw7EXyeBagaReJjmaaRiZMnyThDz6hWLcHvK3qt3XgQbqbQ7xzVLByQLs6UzqYStcPu/exec";
@@ -11,7 +11,7 @@ let currentBlocked = false;
 let gmailPrice = 0;
 let balanceUpdateInterval = null;
 
-// نظام الحظر المؤقت (Rate Limiting)
+// نظام الحظر المؤقت
 let tempBlockUntil = null;
 let gmailCreationHistory = [];
 
@@ -19,7 +19,7 @@ let gmailCreationHistory = [];
 let usedGmailHistory = [];
 
 // ========================================
-// الأسماء الكاملة (جميع الأسماء التي بعتها)
+// الأسماء الكاملة
 // ========================================
 
 const NAMES_LIST = [
@@ -35,7 +35,6 @@ const NAMES_LIST = [
     "Hannah Ward", "Caleb Murphy", "Leah Peterson", "Elijah Baker", "Victoria Phillips"
 ];
 
-// بادئات الجميل (بدون dots)
 const GMAIL_PREFIXES = [
     "jamesmith", "emmajohnson", "michaelbrown", "oliviawilliams", "davidjones",
     "sophiagarcia", "danielmiller", "isabelladavis", "matthewwilson", "avaanderson",
@@ -52,10 +51,6 @@ const GMAIL_PREFIXES = [
 const PASSWORDS_LIST = ["aass1122"];
 const GENDERS = ["ذكر", "أنثى"];
 
-// ========================================
-// منع تكرار الجميل
-// ========================================
-
 function generateUniqueGmail() {
     let attempts = 0;
     let prefix, randomDigits, gmail;
@@ -66,7 +61,6 @@ function generateUniqueGmail() {
         gmail = prefix + randomDigits;
         attempts++;
         
-        // لو خلصت الأرقام، زود رقم إضافي
         if (attempts > 100) {
             randomDigits = Math.floor(Math.random() * 90000) + 10000;
             gmail = prefix + randomDigits;
@@ -88,91 +82,6 @@ function getRandomBirthYear() {
         years.push(i);
     }
     return years[Math.floor(Math.random() * years.length)];
-}
-
-// ========================================
-// رسالة ترحيب
-// ========================================
-
-function showWelcomeMessage() {
-    if (!sessionStorage.getItem('welcomeShown')) {
-        setTimeout(() => {
-            showCustomDialog("🎉 مرحباً بك في B Gmail", "🚀 أفضل موقع لإنشاء حسابات Gmail بسرعة فائقة وأمان عالي!\n\n✨ سرعة فائقة\n✨ أكتر من 1000 اسم حقيقي\n✨ نظام حماية ذكي\n✨ مراجعة سريعة خلال 2-4 أيام", "info");
-            sessionStorage.setItem('welcomeShown', 'true');
-        }, 500);
-    }
-}
-
-function showCustomDialog(title, message, type = "info") {
-    const dialog = document.createElement('div');
-    dialog.className = 'confirm-dialog-overlay';
-    dialog.innerHTML = `
-        <div class="confirm-dialog" style="max-width: 500px;">
-            <div class="confirm-dialog-header" style="background: linear-gradient(135deg, #1a73e8 0%, #0d5bba 100%);">
-                <span class="confirm-dialog-icon" style="font-size: 48px;">${type === "info" ? "📧" : "⚠️"}</span>
-                <h3 style="margin: 0; font-size: 20px;">${title}</h3>
-            </div>
-            <div class="confirm-dialog-body" style="text-align: center;">
-                <p style="white-space: pre-line; line-height: 1.6; text-align: center;">${message}</p>
-            </div>
-            <div class="confirm-dialog-footer" style="padding: 16px 24px 24px;">
-                <button class="confirm-dialog-ok" style="background: #1a73e8; width: 100%;">✅ حسناً</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(dialog);
-    dialog.querySelector('.confirm-dialog-ok').onclick = () => { dialog.remove(); };
-    dialog.onclick = (e) => { if (e.target === dialog) dialog.remove(); };
-}
-
-// ========================================
-// دوال نظام الحظر المؤقت
-// ========================================
-
-function checkTempBlock() {
-    if (currentBlocked) {
-        return { blocked: true, reason: "حسابك محظور نهائياً", permanent: true };
-    }
-    
-    if (tempBlockUntil && new Date() < tempBlockUntil) {
-        const remainingMinutes = Math.ceil((tempBlockUntil - new Date()) / 60000);
-        return { blocked: true, reason: `⚠️ تم حظرك مؤقتاً بسبب إنشاء جميلات كثيرة في وقت قصير. يرجى الانتظار ${remainingMinutes} دقيقة`, permanent: false };
-    }
-    
-    if (tempBlockUntil && new Date() >= tempBlockUntil) {
-        tempBlockUntil = null;
-        gmailCreationHistory = [];
-    }
-    
-    return { blocked: false };
-}
-
-function recordGmailCreation() {
-    const now = new Date();
-    gmailCreationHistory.push(now);
-    
-    const oneMinuteAgo = new Date(now.getTime() - 60000);
-    gmailCreationHistory = gmailCreationHistory.filter(time => time >= oneMinuteAgo);
-    
-    if (gmailCreationHistory.length > 3) {
-        tempBlockUntil = new Date(now.getTime() + 3600000);
-        showToast(`⚠️ تم حظرك مؤقتاً لمدة ساعة!`, true);
-        return false;
-    }
-    
-    return true;
-}
-
-// ========================================
-// دوال نسخ النص
-// ========================================
-
-function copyToClipboard(text, fieldName) {
-    navigator.clipboard.writeText(text).then(() => {
-        showToast(`✅ تم نسخ ${fieldName} بنجاح!`, false);
-    }).catch(() => {
-        showToast(`❌ فشل نسخ ${fieldName}`, true);
-    });
 }
 
 // ========================================
@@ -227,15 +136,43 @@ async function callAPI(action, params = {}) {
     }
 }
 
+function copyToClipboard(text, fieldName) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast(`✅ تم نسخ ${fieldName} بنجاح!`, false);
+    }).catch(() => {
+        showToast(`❌ فشل نسخ ${fieldName}`, true);
+    });
+}
+
+// ========================================
+// التحكم في ظهور شاشة التسجيل والرئيسية
+// ========================================
+
+function showRegisterScreen() {
+    const registerScreen = document.getElementById('registerScreen');
+    const mainScreen = document.getElementById('mainScreen');
+    
+    if (registerScreen) registerScreen.classList.remove('hidden');
+    if (mainScreen) mainScreen.classList.add('hidden');
+}
+
+function showMainScreen() {
+    const registerScreen = document.getElementById('registerScreen');
+    const mainScreen = document.getElementById('mainScreen');
+    
+    if (registerScreen) registerScreen.classList.add('hidden');
+    if (mainScreen) mainScreen.classList.remove('hidden');
+}
+
 // ========================================
 // التسجيل والدخول (مرة واحدة فقط)
 // ========================================
 
-async function registerOrLogin() {
+async function registerDevice() {
     const deviceId = getDeviceId();
-    let savedAccount = localStorage.getItem('accountNumber');
+    const savedAccount = localStorage.getItem('accountNumber');
     
-    // التحقق من وجود حساب مسجل مسبقاً
+    // لو فيه حساب موجود بالفعل، ندخل بيه
     if (savedAccount) {
         currentAccountNumber = savedAccount;
         const result = await callAPI('getBalance', { accountNumber: savedAccount });
@@ -251,62 +188,52 @@ async function registerOrLogin() {
             if (pendingEl) pendingEl.textContent = currentPendingBalance;
             
             if (currentBlocked) {
-                showToast('⚠️ حسابك محظور نهائياً! لا يمكنك استخدام الموقع.', true);
-                disableAllButtons();
+                showToast('⚠️ حسابك محظور! لا يمكنك استخدام الموقع.', true);
                 return false;
             }
             
             await loadServicePrice();
             showMainScreen();
             startBalanceUpdates();
-            showWelcomeMessage();
+            showToast('تم تسجيل الدخول بنجاح!');
             return true;
         } else {
-            // الحساب غير موجود، نمسحه ونسجل جديد
             localStorage.removeItem('accountNumber');
-            savedAccount = null;
-            currentAccountNumber = null;
         }
     }
     
-    // تسجيل جديد (يحدث مرة واحدة فقط لكل جهاز)
-    if (!savedAccount) {
-        setButtonLoading('registerBtn', true, 'جاري التسجيل...');
-        const accountNumber = 'ACC' + Math.floor(Math.random() * 100000) + Date.now().toString().slice(-6);
-        const result = await callAPI('register', { accountNumber, deviceId });
-        setButtonLoading('registerBtn', false);
+    // تسجيل جديد
+    setButtonLoading('registerBtn', true, 'جاري التسجيل...');
+    const accountNumber = 'ACC' + Math.floor(Math.random() * 100000) + Date.now().toString().slice(-6);
+    const result = await callAPI('register', { accountNumber, deviceId });
+    setButtonLoading('registerBtn', false);
+    
+    if (result && result.success === true) {
+        localStorage.setItem('accountNumber', accountNumber);
+        localStorage.setItem('deviceId', deviceId);
+        currentAccountNumber = accountNumber;
+        currentBlocked = false;
+        currentBalance = 0;
+        currentPendingBalance = 0;
         
-        if (result && result.success === true) {
-            localStorage.setItem('accountNumber', accountNumber);
-            localStorage.setItem('deviceId', deviceId);
-            localStorage.setItem('registered', 'true'); // علامة التسجيل
-            currentAccountNumber = accountNumber;
-            currentBlocked = false;
-            currentBalance = 0;
-            currentPendingBalance = 0;
-            
-            const balanceEl = document.getElementById('balance');
-            const pendingEl = document.getElementById('pendingBalance');
-            if (balanceEl) balanceEl.textContent = '0';
-            if (pendingEl) pendingEl.textContent = '0';
-            
-            showToast('تم تسجيل الجهاز بنجاح!');
-            await loadServicePrice();
-            showMainScreen();
-            startBalanceUpdates();
-            showWelcomeMessage();
-            return true;
-        } else {
-            showToast(result?.error || 'فشل التسجيل، حاول مرة أخرى', true);
-            return false;
-        }
+        const balanceEl = document.getElementById('balance');
+        const pendingEl = document.getElementById('pendingBalance');
+        if (balanceEl) balanceEl.textContent = '0';
+        if (pendingEl) pendingEl.textContent = '0';
+        
+        showToast('✅ تم تسجيل الجهاز بنجاح!');
+        await loadServicePrice();
+        showMainScreen();
+        startBalanceUpdates();
+        return true;
+    } else {
+        showToast(result?.error || 'فشل التسجيل، حاول مرة أخرى', true);
+        return false;
     }
-    
-    return false;
 }
 
 // ========================================
-// جلب الرصيد وسعر الخدمة
+// جلب الرصيد وسعر الخدمة من الشيت
 // ========================================
 
 async function loadBalance() {
@@ -350,7 +277,7 @@ async function loadBalance() {
     } else if (result && result.error === "User not found") {
         localStorage.removeItem('accountNumber');
         currentAccountNumber = null;
-        registerOrLogin();
+        showRegisterScreen();
     }
 }
 
@@ -359,18 +286,10 @@ async function loadServicePrice() {
     
     const result = await callAPI('getServicePrice', { service: 'Gmail' });
     const priceEl = document.getElementById('servicePrice');
-    const oldPrice = gmailPrice;
     
     if (result && result.success === true) {
         gmailPrice = parseFloat(result.price) || 8;
         if (priceEl) priceEl.textContent = gmailPrice + ' ج.م';
-        
-        if (oldPrice !== gmailPrice && oldPrice !== 0) {
-            priceEl.style.animation = 'none';
-            priceEl.offsetHeight;
-            priceEl.style.animation = 'pulse 0.5s ease';
-            showToast(`💰 تم تحديث سعر الخدمة إلى ${gmailPrice} ج.م`, false);
-        }
     } else {
         gmailPrice = 8;
         if (priceEl) priceEl.textContent = gmailPrice + ' ج.م';
@@ -408,33 +327,41 @@ function enableAllButtons() {
 }
 
 // ========================================
-// دالة التحقق السريع
+// نظام الحظر المؤقت
 // ========================================
 
-function quickLocalGmailVerify(gmail, existingGmailsList) {
-    const emailRegex = /^[a-zA-Z0-9._-]+@gmail\.com$/;
-    if (!emailRegex.test(gmail)) {
-        return { success: false, error: "❌ صيغة البريد الإلكتروني غير صحيحة" };
+function checkTempBlock() {
+    if (currentBlocked) {
+        return { blocked: true, reason: "حسابك محظور نهائياً", permanent: true };
     }
     
-    if (existingGmailsList.includes(gmail)) {
-        return { success: false, error: "❌ هذا البريد الإلكتروني مسجل مسبقاً" };
+    if (tempBlockUntil && new Date() < tempBlockUntil) {
+        const remainingMinutes = Math.ceil((tempBlockUntil - new Date()) / 60000);
+        return { blocked: true, reason: `⚠️ تم حظرك مؤقتاً لمدة ${remainingMinutes} دقيقة`, permanent: false };
     }
     
-    const username = gmail.split("@")[0];
-    if (username.length < 5) {
-        return { success: false, error: "❌ اسم المستخدم قصير جداً (أقل من 5 أحرف)" };
-    }
-    if (username.length > 40) {
-        return { success: false, error: "❌ اسم المستخدم طويل جداً (أكثر من 40 حرف)" };
+    if (tempBlockUntil && new Date() >= tempBlockUntil) {
+        tempBlockUntil = null;
+        gmailCreationHistory = [];
     }
     
-    const blockedUsernames = ["admin", "support", "info", "test", "mailer", "postmaster", "webmaster", "noreply", "contact", "hello", "user", "example"];
-    if (blockedUsernames.includes(username.toLowerCase())) {
-        return { success: false, error: "❌ هذا الاسم غير مسموح به" };
+    return { blocked: false };
+}
+
+function recordGmailCreation() {
+    const now = new Date();
+    gmailCreationHistory.push(now);
+    
+    const oneMinuteAgo = new Date(now.getTime() - 60000);
+    gmailCreationHistory = gmailCreationHistory.filter(time => time >= oneMinuteAgo);
+    
+    if (gmailCreationHistory.length > 3) {
+        tempBlockUntil = new Date(now.getTime() + 3600000);
+        showToast(`⚠️ تم حظرك مؤقتاً لمدة ساعة!`, true);
+        return false;
     }
     
-    return { success: true, message: "✅ البريد الإلكتروني صالح" };
+    return true;
 }
 
 // ========================================
@@ -463,26 +390,16 @@ async function showCreateGmailModal() {
     const blockCheck = checkTempBlock();
     if (blockCheck.blocked) {
         showToast(blockCheck.reason, true);
-        if (blockCheck.permanent) {
-            disableAllButtons();
-        }
         return;
     }
     
     if (currentBlocked) {
-        showToast('❌ حسابك محظور نهائياً! لا يمكنك إنشاء جميلات جديدة.', true);
-        return;
-    }
-    
-    if (!currentAccountNumber) {
-        showToast('الرجاء تسجيل الدخول أولاً', true);
+        showToast('❌ حسابك محظور نهائياً!', true);
         return;
     }
     
     setButtonLoading('createGmailBtn', true, 'جاري إنشاء البيانات...');
-    
     currentGeneratedData = getRandomLocalData();
-    
     setButtonLoading('createGmailBtn', false);
     
     document.getElementById('generatedName').innerHTML = `${currentGeneratedData.name} <button class="copy-btn" onclick="copyToClipboard('${currentGeneratedData.name.replace(/'/g, "\\'")}', 'الاسم')">📋 نسخ</button>`;
@@ -536,38 +453,12 @@ async function confirmGmailCreation() {
         return;
     }
     
-    if (currentBlocked) {
-        showToast('❌ حسابك محظور نهائياً! لا يمكنك إنشاء جميلات جديدة.', true);
-        document.getElementById('createModal').classList.add('hidden');
-        return;
-    }
-    
     const confirmed = await showEnhancedConfirmDialog();
     if (!confirmed) return;
     
-    setButtonLoading('confirmCreateBtn', true, 'جاري التحقق والإرسال...');
+    setButtonLoading('confirmCreateBtn', true, 'جاري الإرسال...');
     
     const fullGmail = currentGeneratedData.gmail + '@gmail.com';
-    
-    const existingResult = await callAPI('getMyGmails', { accountNumber: currentAccountNumber });
-    let existingGmails = [];
-    if (existingResult && existingResult.success === true && existingResult.gmails) {
-        existingGmails = existingResult.gmails.map(g => g.gmail);
-    }
-    
-    const quickVerify = quickLocalGmailVerify(fullGmail, existingGmails);
-    if (!quickVerify.success) {
-        setButtonLoading('confirmCreateBtn', false);
-        showToast(quickVerify.error, true);
-        return;
-    }
-    
-    const canCreate = recordGmailCreation();
-    if (!canCreate) {
-        setButtonLoading('confirmCreateBtn', false);
-        document.getElementById('createModal').classList.add('hidden');
-        return;
-    }
     
     const result = await callAPI('submitGmail', {
         accountNumber: currentAccountNumber,
@@ -583,7 +474,7 @@ async function confirmGmailCreation() {
         await loadBalance();
         document.getElementById('createModal').classList.add('hidden');
         currentGeneratedData = null;
-        showToast('✅ تم الإرسال والتحقق! سيتم مراجعة الجميل خلال 2-4 أيام');
+        showToast('✅ تم الإرسال! سيتم مراجعة الجميل خلال 2-4 أيام');
     } else {
         showToast(result?.error || 'حدث خطأ أثناء الإرسال', true);
     }
@@ -596,11 +487,6 @@ async function confirmGmailCreation() {
 function showWithdrawModal() {
     if (currentBlocked) {
         showToast('❌ حسابك محظور! لا يمكنك سحب الأموال.', true);
-        return;
-    }
-    
-    if (!currentAccountNumber) {
-        showToast('الرجاء تسجيل الدخول أولاً', true);
         return;
     }
     
@@ -632,7 +518,7 @@ async function submitWithdrawRequest() {
         document.getElementById('withdrawAmount').value = '';
         showToast('✅ تم إرسال طلب السحب بنجاح');
     } else {
-        showToast(result?.error || 'حدث خطأ أثناء إرسال طلب السحب', true);
+        showToast(result?.error || 'حدث خطأ', true);
     }
 }
 
@@ -646,9 +532,6 @@ async function showGmailLogs() {
         return;
     }
     
-    const tbody = document.getElementById('gmailLogsBody');
-    tbody.innerHTML = '<tr><td colspan="3" class="loading-data">⏳ جاري التحميل...<\/td><\/tr>';
-    
     setButtonLoading('gmailLogsBtn', true, 'جاري التحميل...');
     const result = await callAPI('getMyGmails', { accountNumber: currentAccountNumber });
     setButtonLoading('gmailLogsBtn', false);
@@ -660,13 +543,14 @@ async function showGmailLogs() {
             filtered = result.gmails.filter(g => g.status === filter);
         }
         
+        const tbody = document.getElementById('gmailLogsBody');
+        
         if (filtered.length === 0) {
-            tbody.innerHTML = '<td><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>';
+            tbody.innerHTML = '<tr><td colspan="3" class="no-data">📭 لا توجد جميلات</td></tr>';
         } else {
             const reversed = [...filtered].reverse();
             tbody.innerHTML = reversed.map(rec => {
                 let statusText = '', statusClass = '';
-                
                 if (rec.status === 'Pending') { 
                     statusText = '⏳ قيد المراجعة'; 
                     statusClass = 'status-pending'; 
@@ -679,20 +563,17 @@ async function showGmailLogs() {
                     statusText = '❌ مرفوض'; 
                     statusClass = 'status-rejected'; 
                 }
-                
                 const displayGmail = rec.gmail.replace('@gmail.com', '');
                 const formattedDate = new Date(rec.timestamp).toLocaleDateString('ar-EG');
-                
                 return `<tr>
-                    <td style="direction: ltr;">${displayGmail}<\/td>
-                    <td><span class="status-badge ${statusClass}">${statusText}<\/span><\/td>
-                    <td>${formattedDate}<\/td>
-                <\/tr>`;
+                    <td style="direction: ltr;">${displayGmail}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>${formattedDate}</td>
+                </tr>`;
             }).join('');
         }
         document.getElementById('gmailLogsModal').classList.remove('hidden');
     } else {
-        tbody.innerHTML = '<td><td colspan="3" class="no-data">❌ حدث خطأ في تحميل السجلات<\/td><\/tr>';
         showToast('حدث خطأ في تحميل السجلات', true);
     }
 }
@@ -702,9 +583,6 @@ async function showWithdrawLogs() {
         showToast('الرجاء تسجيل الدخول أولاً', true);
         return;
     }
-    
-    const tbody = document.getElementById('withdrawLogsBody');
-    tbody.innerHTML = '<tr><td colspan="4" class="loading-data">⏳ جاري التحميل...<\/td><\/tr>';
     
     setButtonLoading('withdrawLogsBtn', true, 'جاري التحميل...');
     const result = await callAPI('getMyWithdrawals', { accountNumber: currentAccountNumber });
@@ -717,8 +595,10 @@ async function showWithdrawLogs() {
             filtered = result.withdrawals.filter(w => w.status === filter);
         }
         
+        const tbody = document.getElementById('withdrawLogsBody');
+        
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="no-data">📭 لا توجد سحوبات<\/td><\/tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="no-data">📭 لا توجد سحوبات</td></tr>';
         } else {
             const reversed = [...filtered].reverse();
             tbody.innerHTML = reversed.map(w => {
@@ -737,196 +617,39 @@ async function showWithdrawLogs() {
                 }
                 const formattedDate = new Date(w.timestamp).toLocaleDateString('ar-EG');
                 return `<tr>
-                    <td>${w.wallet}<\/td>
-                    <td>${w.amount} ج.م<\/td>
-                    <td><span class="status-badge ${statusClass}">${statusText}<\/span><\/td>
-                    <td>${formattedDate}<\/td>
-                <\/tr>`;
+                    <td>${w.wallet}</td>
+                    <td>${w.amount} ج.م</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>${formattedDate}</td>
+                </tr>`;
             }).join('');
         }
         document.getElementById('withdrawLogsModal').classList.remove('hidden');
     } else {
-        tbody.innerHTML = '<tr><td colspan="4" class="no-data">❌ حدث خطأ في تحميل السجلات<\/td><\/tr>';
         showToast('حدث خطأ في تحميل السجلات', true);
     }
 }
 
 // ========================================
-// عرض الشاشات
-// ========================================
-
-function showMainScreen() {
-    const mainScreen = document.getElementById('mainScreen');
-    if (mainScreen) mainScreen.classList.remove('hidden');
-}
-
-// ========================================
 // بدء التشغيل
 // ========================================
 
 async function init() {
-    await registerOrLogin();
-    
-    window.copyToClipboard = copyToClipboard;
-    
-    const createBtn = document.getElementById('createGmailBtn');
-    const confirmBtn = document.getElementById('confirmCreateBtn');
-    const withdrawBtn = document.getElementById('withdrawBtn');
-    const submitWithdraw = document.getElementById('submitWithdrawBtn');
-    const gmailLogs = document.getElementById('gmailLogsBtn');
-    const withdrawLogs = document.getElementById('withdrawLogsBtn');
-    
-    if (createBtn) createBtn.addEventListener('click', showCreateGmailModal);
-    if (confirmBtn) confirmBtn.addEventListener('click', confirmGmailCreation);
-    if (withdrawBtn) withdrawBtn.addEventListener('click', showWithdrawModal);
-    if (submitWithdraw) submitWithdraw.addEventListener('click', submitWithdrawRequest);
-    if (gmailLogs) gmailLogs.addEventListener('click', showGmailLogs);
-    if (withdrawLogs) withdrawLogs.addEventListener('click', showWithdrawLogs);
-    
-    document.querySelectorAll('.close-modal').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const modal = e.target.closest('.modal');
-            if (modal) modal.classList.add('hidden');
-        });
-    });
-    
-    window.addEventListener('click', (e) => {
-        if (e.target.classList && e.target.classList.contains('modal')) {
-            e.target.classList.add('hidden');
-        }
-    });
-    
-    const gmailFilter = document.getElementById('gmailStatusFilter');
-    const withdrawFilter = document.getElementById('withdrawStatusFilter');
-    if (gmailFilter) gmailFilter.addEventListener('change', showGmailLogs);
-    if (withdrawFilter) withdrawFilter.addEventListener('change', showWithdrawLogs);
-    
-}
-// ========================================
-// التحكم في ظهور شاشة التسجيل والرئيسية
-// ========================================
-
-// دالة لإظهار شاشة التسجيل وإخفاء الرئيسية
-function showRegisterScreen() {
-    const registerScreen = document.getElementById('registerScreen');
-    const mainScreen = document.getElementById('mainScreen');
-    
-    if (registerScreen) registerScreen.classList.remove('hidden');
-    if (mainScreen) mainScreen.classList.add('hidden');
-}
-
-// دالة لإظهار الشاشة الرئيسية وإخفاء التسجيل
-function showMainScreen() {
-    const registerScreen = document.getElementById('registerScreen');
-    const mainScreen = document.getElementById('mainScreen');
-    
-    if (registerScreen) registerScreen.classList.add('hidden');
-    if (mainScreen) mainScreen.classList.remove('hidden');
-}
-
-// التحقق من التسجيل عند تحميل الصفحة
-function checkRegistration() {
-    const isRegistered = localStorage.getItem('accountNumber');
-    const deviceId = localStorage.getItem('deviceId');
-    
-    if (isRegistered && deviceId) {
-        // الجهاز مسجل → اظهر الشاشة الرئيسية
-        showMainScreen();
-    } else {
-        // الجهاز مش مسجل → اظهر شاشة التسجيل
-        showRegisterScreen();
-    }
-}
-
-// ========================================
-// دالة التسجيل
-// ========================================
-
-async function registerDevice() {
-    const deviceId = getDeviceId();
+    // التحقق من التسجيل وإظهار الشاشة المناسبة
     const savedAccount = localStorage.getItem('accountNumber');
     
-    // لو فيه حساب موجود بالفعل
-    if (savedAccount) {
-        currentAccountNumber = savedAccount;
-        const result = await callAPI('getBalance', { accountNumber: savedAccount });
-        
-        if (result && result.success === true) {
-            currentBalance = parseFloat(result.balance) || 0;
-            currentPendingBalance = parseFloat(result.pendingBalance) || 0;
-            currentBlocked = result.blocked === true;
-            
-            if (currentBlocked) {
-                showToast('⚠️ حسابك محظور!', true);
-                return false;
-            }
-            
-            await loadServicePrice();
-            showMainScreen();
-            startBalanceUpdates();
-            showToast('تم تسجيل الدخول بنجاح!');
-            return true;
-        } else {
-            localStorage.removeItem('accountNumber');
-        }
-    }
-    
-    // تسجيل جديد
-    setButtonLoading('registerBtn', true, 'جاري التسجيل...');
-    const accountNumber = 'ACC' + Math.floor(Math.random() * 100000) + Date.now().toString().slice(-6);
-    const result = await callAPI('register', { accountNumber, deviceId });
-    setButtonLoading('registerBtn', false);
-    
-    if (result && result.success === true) {
-        localStorage.setItem('accountNumber', accountNumber);
-        localStorage.setItem('deviceId', deviceId);
-        currentAccountNumber = accountNumber;
-        currentBlocked = false;
-        currentBalance = 0;
-        currentPendingBalance = 0;
-        
-        const balanceEl = document.getElementById('balance');
-        const pendingEl = document.getElementById('pendingBalance');
-        if (balanceEl) balanceEl.textContent = '0';
-        if (pendingEl) pendingEl.textContent = '0';
-        
-        showToast('✅ تم تسجيل الجهاز بنجاح!');
-        await loadServicePrice();
-        showMainScreen();
-        startBalanceUpdates();
-        return true;
-    } else {
-        showToast(result?.error || 'فشل التسجيل، حاول مرة أخرى', true);
-        return false;
-    }
-}
-
-// ========================================
-// بدء التشغيل
-// ========================================
-
-async function init() {
-    // أول حاجة: نتحقق من التسجيل ونظهر الشاشة المناسبة
-    checkRegistration();
-    
-    // ربط زر التسجيل
-    const registerBtn = document.getElementById('registerBtn');
-    if (registerBtn) {
-        registerBtn.addEventListener('click', async () => {
-            await registerDevice();
-        });
-    }
-    
-    // إذا كان فيه حساب مسجل، نحمل البيانات
-    const savedAccount = localStorage.getItem('accountNumber');
     if (savedAccount) {
         currentAccountNumber = savedAccount;
         await loadBalance();
         await loadServicePrice();
+        showMainScreen();
         startBalanceUpdates();
+    } else {
+        showRegisterScreen();
     }
     
-    // ربط باقي الأزرار
+    // ربط الأزرار
+    const registerBtn = document.getElementById('registerBtn');
     const createBtn = document.getElementById('createGmailBtn');
     const confirmBtn = document.getElementById('confirmCreateBtn');
     const withdrawBtn = document.getElementById('withdrawBtn');
@@ -934,6 +657,7 @@ async function init() {
     const gmailLogs = document.getElementById('gmailLogsBtn');
     const withdrawLogs = document.getElementById('withdrawLogsBtn');
     
+    if (registerBtn) registerBtn.addEventListener('click', registerDevice);
     if (createBtn) createBtn.addEventListener('click', showCreateGmailModal);
     if (confirmBtn) confirmBtn.addEventListener('click', confirmGmailCreation);
     if (withdrawBtn) withdrawBtn.addEventListener('click', showWithdrawModal);
@@ -941,11 +665,11 @@ async function init() {
     if (gmailLogs) gmailLogs.addEventListener('click', showGmailLogs);
     if (withdrawLogs) withdrawLogs.addEventListener('click', showWithdrawLogs);
     
-    // إغلاق النوافذ المنبثقة
+    window.copyToClipboard = copyToClipboard;
+    
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const modal = e.target.closest('.modal');
-            if (modal) modal.classList.add('hidden');
+            e.target.closest('.modal').classList.add('hidden');
         });
     });
     
@@ -960,8 +684,5 @@ async function init() {
     if (gmailFilter) gmailFilter.addEventListener('change', showGmailLogs);
     if (withdrawFilter) withdrawFilter.addEventListener('change', showWithdrawLogs);
 }
-
-// بدء التطبيق
-window.addEventListener('DOMContentLoaded', init);
 
 window.addEventListener('DOMContentLoaded', init);
