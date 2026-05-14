@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>B Gmail - منصة إنشاء حسابات Gmail</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- الشاشة الرئيسية -->
+        <div id="mainScreen" class="screen">
+            <div class="header">
+                <div class="header-top">
+                    <h1>📧 B Gmail</h1>
+                </div>
+                <div class="balance-card">
+                    <div class="balance-item">
+                        <span class="balance-label">💰 الرصيد الحالي</span>
+                        <span class="balance-value" id="balance">0</span>
+                        <span class="balance-currency">ج.م</span>
+                    </div>
+                    <div class="balance-item pending">
+                        <span class="balance-label">⏳ الرصيد المتجمد</span>
+                        <span class="balance-value" id="pendingBalance">0</span>
+                        <span class="balance-currency">ج.م</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="services-section">
+                <h2>✨ الخدمات المتاحة</h2>
+                <button id="createGmailBtn" class="service-btn">
+                    <span class="service-icon">📧</span>
+                    <div class="service-info">
+                        <span class="service-title">إنشاء حساب Gmail</span>
+                        <span class="service-price" id="servicePrice">--</span>
+                    </div>
+                </button>
+            </div>
+
+            <div class="actions-section">
+                <button id="withdrawBtn" class="btn-withdraw">💸 سحب الأموال</button>
+                <button id="gmailLogsBtn" class="btn-logs">📋 سجلات الجميلات</button>
+                <button id="withdrawLogsBtn" class="btn-logs">📊 سجلات السحب</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إنشاء Gmail المنبثقة -->
+    <div id="createModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✨ إنشاء حساب Gmail جديد</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="generated-data">
+                    <div class="data-row">
+                        <label>👤 الاسم:</label>
+                        <span id="generatedName">---</span>
+                    </div>
+                    <br>
+                    <div class="data-row">
+                        <label>📧 البريد الإلكتروني:</label>
+                        <span id="generatedGmail">---</span>
+                    </div>
+                    <br>
+                    <div class="data-row">
+                        <label>🔐 كلمة المرور:</label>
+                        <span id="generatedPassword">---</span>
+                    </div>
+                    <div class="data-row">
+                        <label>⚧ الجنس / سنة الميلاد:</label>
+                        <span id="generatedGenderAge">---</span>
+                    </div>
+                </div>
+                
+                <div class="warning-message">
+                    <div class="warning-icon">⚠️</div>
+                    <div class="warning-text">
+                        <strong>تحذير هام!</strong><br>
+                        يرجى التأكد من إنشاء حساب Gmail بنفس البيانات الموضحة أعلاه.<br>
+                        في حالة التلاعب أو إرسال بيانات غير صحيحة،<br>
+                        <span class="warning-highlight">سيتم حظر حسابك نهائياً من الموقع.</span>
+                    </div>
+                </div>
+                
+                <button id="confirmCreateBtn" class="btn-danger">✅ تم إنشاء الجميل</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة السحب -->
+    <div id="withdrawModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>💸 سحب الأموال</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>🏦 رقم المحفظة / الكاش:</label>
+                    <input type="text" id="walletNumber" placeholder="أدخل رقم المحفظة" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>💰 المبلغ المراد سحبه:</label>
+                    <input type="number" id="withdrawAmount" placeholder="أدخل المبلغ" class="form-input">
+                    <small class="form-hint">الرصيد المتاح: <span id="availableBalanceHint">0</span> ج.م</small>
+                </div>
+                <button id="submitWithdrawBtn" class="btn-primary">إرسال طلب السحب</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة سجلات الجميلات -->
+    <div id="gmailLogsModal" class="modal hidden modal-large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📋 سجلات الجميلات</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="review-notice">
+                    ⏳ <strong>ملاحظة:</strong> يتم مراجعة الجميلات خلال 2 إلى 4 أيام. الرجاء الانتظار بصبر.
+                </div>
+                <div class="logs-filter">
+                    <select id="gmailStatusFilter" class="form-input">
+                        <option value="all">📋 الكل</option>
+                        <option value="Pending">⏳ قيد المراجعة</option>
+                        <option value="Approved">✅ مقبول</option>
+                        <option value="Rejected">❌ مرفوض</option>
+                    </select>
+                </div>
+                <div class="logs-table-container">
+                    <table class="logs-table" id="gmailLogsTable">
+                        <thead>
+                            <tr>
+                                <th>📧 البريد الإلكتروني</th>
+                                <th>📌 الحالة</th>
+                                <th>📅 التاريخ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gmailLogsBody">
+                            <tr><td colspan="3" class="no-data">📭 لا توجد جميلات</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة سجلات السحب -->
+    <div id="withdrawLogsModal" class="modal hidden modal-large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📊 سجلات السحب</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="logs-filter">
+                    <select id="withdrawStatusFilter" class="form-input">
+                        <option value="all">📋 الكل</option>
+                        <option value="Pending">⏳ قيد المراجعة</option>
+                        <option value="Completed">✅ مكتمل</option>
+                        <option value="Rejected">❌ مرفوض</option>
+                    </select>
+                </div>
+                <div class="logs-table-container">
+                    <table class="logs-table" id="withdrawLogsTable">
+                        <thead>
+                            <tr>
+                                <th>🏦 رقم المحفظة</th>
+                                <th>💰 المبلغ</th>
+                                <th>📌 الحالة</th>
+                                <th>📅 التاريخ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="withdrawLogsBody">
+                            <tr><td colspan="4" class="no-data">📭 لا توجد سحوبات</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- رسالة التنبيه -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
