@@ -1,5 +1,5 @@
 // ========================================
-// B Gmail - script.js (النسخة النهائية مع حل مشكلة المقبول والمرفوض)
+// B Gmail - script.js (النسخة النهائية مع جميع التعديلات)
 // ========================================
 
 const API_URL = "https://script.google.com/macros/s/AKfycbw7EXyeBagaReJjmaaRiZMnyThDz6hWLcHvK3qt3XgQbqbQ7xzVLByQLs6UzqYStcPu/exec";
@@ -15,8 +15,11 @@ let balanceUpdateInterval = null;
 let tempBlockUntil = null;
 let gmailCreationHistory = [];
 
+// سجل الأسماء والأرقام المستخدمة لمنع التكرار
+let usedGmailHistory = [];
+
 // ========================================
-// البيانات المحلية (الأسماء كما هي بدون dots)
+// الأسماء الكاملة (جميع الأسماء التي بعتها)
 // ========================================
 
 const NAMES_LIST = [
@@ -29,17 +32,10 @@ const NAMES_LIST = [
     "Lucas Phillips", "Lily Campbell", "Jack Parker", "Aria Roberts", "Aiden Collins",
     "Zoey Richardson", "Samuel Murphy", "Mila Sanders", "Henry Cook", "Stella Morris",
     "Owen Reed", "Natalie Bailey", "Gabriel Bell", "Zoe Rivera", "Isaac Cooper",
-    "Hannah Ward", "Caleb Murphy", "Leah Peterson", "Elijah Baker", "Victoria Phillips",
-    "Pierre Dubois", "Marie Lefebvre", "Louis Moreau", "Sophie Laurent", "Jean Dupont",
-    "Claire Rousseau", "Paul Martin", "Chloé Blanc", "Jacques Girard", "Isabelle Dumont",
-    "Friedrich Müller", "Anna Schmidt", "Hans Weber", "Julia Fischer", "Karl Braun",
-    "Laura Wagner", "Wilhelm Koch", "Lena Zimmer", "Stefan Klein", "Eva Wolf",
-    "Max Becker", "Nora Schmidt", "Franz Meyer", "Lena Fischer", "Erik Richter",
-    "Johanna Hartmann", "Christian Schulz", "Maria Klein", "Georg Schneider", "Emma Keller",
-    "Marco Rossi", "Sofia Bianchi", "Luca Ferrari", "Giulia Romano", "Giovanni Greco",
-    "Alessia Conti", "Matteo Esposito", "Valentina Morelli", "Alessandro Ricci", "Serena Galli"
+    "Hannah Ward", "Caleb Murphy", "Leah Peterson", "Elijah Baker", "Victoria Phillips"
 ];
 
+// بادئات الجميل (بدون dots)
 const GMAIL_PREFIXES = [
     "jamesmith", "emmajohnson", "michaelbrown", "oliviawilliams", "davidjones",
     "sophiagarcia", "danielmiller", "isabelladavis", "matthewwilson", "avaanderson",
@@ -50,19 +46,41 @@ const GMAIL_PREFIXES = [
     "lucasphillips", "lilycampbell", "jackparker", "ariaroberts", "aidencollins",
     "zoeyrichardson", "samuelmurphy", "milasanders", "henrycook", "stellamorris",
     "owenreed", "nataliebailey", "gabrielbell", "zoerivera", "isaaccooper",
-    "hannahward", "calebmurphy", "leahpeterson", "elijahbaker", "victoriaphillips",
-    "pierredubois", "marielefebvre", "luismoreau", "sophielaurent", "jeandupont",
-    "clairerousseau", "paulmartin", "chloeblanc", "jacquesgirard", "isabelledumont",
-    "friedrichmüller", "annaschmidt", "hansweber", "juliafischer", "karlbraun",
-    "laurawagner", "wilhelmkoch", "lenazimmer", "stefanklein", "evawolf",
-    "maxbecker", "noraschmidt", "franzmeyer", "lenafischer", "erikrichter",
-    "johannahartmann", "christianschulz", "mariaklein", "georgschneider", "emmakeller",
-    "marcorossi", "sofiabianchi", "lucaferrari", "giuliaromano", "giovannigreco",
-    "alessiaconti", "matteoesposito", "valentinamorelli", "alessandroricci", "serenagalli"
+    "hannahward", "calebmurphy", "leahpeterson", "elijahbaker", "victoriaphillips"
 ];
 
 const PASSWORDS_LIST = ["aass1122"];
 const GENDERS = ["ذكر", "أنثى"];
+
+// ========================================
+// منع تكرار الجميل
+// ========================================
+
+function generateUniqueGmail() {
+    let attempts = 0;
+    let prefix, randomDigits, gmail;
+    
+    do {
+        prefix = GMAIL_PREFIXES[Math.floor(Math.random() * GMAIL_PREFIXES.length)];
+        randomDigits = Math.floor(Math.random() * 9000) + 1000;
+        gmail = prefix + randomDigits;
+        attempts++;
+        
+        // لو خلصت الأرقام، زود رقم إضافي
+        if (attempts > 100) {
+            randomDigits = Math.floor(Math.random() * 90000) + 10000;
+            gmail = prefix + randomDigits;
+        }
+        if (attempts > 200) {
+            randomDigits = Math.floor(Math.random() * 900000) + 100000;
+            gmail = prefix + randomDigits;
+        }
+        
+    } while (usedGmailHistory.includes(gmail));
+    
+    usedGmailHistory.push(gmail);
+    return gmail;
+}
 
 function getRandomBirthYear() {
     const years = [];
@@ -210,13 +228,14 @@ async function callAPI(action, params = {}) {
 }
 
 // ========================================
-// التسجيل والدخول التلقائي
+// التسجيل والدخول (مرة واحدة فقط)
 // ========================================
 
 async function registerOrLogin() {
     const deviceId = getDeviceId();
     let savedAccount = localStorage.getItem('accountNumber');
     
+    // التحقق من وجود حساب مسجل مسبقاً
     if (savedAccount) {
         currentAccountNumber = savedAccount;
         const result = await callAPI('getBalance', { accountNumber: savedAccount });
@@ -240,16 +259,17 @@ async function registerOrLogin() {
             await loadServicePrice();
             showMainScreen();
             startBalanceUpdates();
-            showToast('تم تسجيل الدخول بنجاح!');
             showWelcomeMessage();
             return true;
         } else {
+            // الحساب غير موجود، نمسحه ونسجل جديد
             localStorage.removeItem('accountNumber');
             savedAccount = null;
             currentAccountNumber = null;
         }
     }
     
+    // تسجيل جديد (يحدث مرة واحدة فقط لكل جهاز)
     if (!savedAccount) {
         setButtonLoading('registerBtn', true, 'جاري التسجيل...');
         const accountNumber = 'ACC' + Math.floor(Math.random() * 100000) + Date.now().toString().slice(-6);
@@ -259,6 +279,7 @@ async function registerOrLogin() {
         if (result && result.success === true) {
             localStorage.setItem('accountNumber', accountNumber);
             localStorage.setItem('deviceId', deviceId);
+            localStorage.setItem('registered', 'true'); // علامة التسجيل
             currentAccountNumber = accountNumber;
             currentBlocked = false;
             currentBalance = 0;
@@ -422,10 +443,8 @@ function quickLocalGmailVerify(gmail, existingGmailsList) {
 
 function getRandomLocalData() {
     const randomName = NAMES_LIST[Math.floor(Math.random() * NAMES_LIST.length)];
-    const randomPrefix = GMAIL_PREFIXES[Math.floor(Math.random() * GMAIL_PREFIXES.length)];
-    const randomDigits = Math.floor(Math.random() * 9000) + 1000;
-    const randomGmail = randomPrefix + randomDigits;
-    const randomPassword = PASSWORDS_LIST[Math.floor(Math.random() * PASSWORDS_LIST.length)];
+    const randomGmail = generateUniqueGmail();
+    const randomPassword = PASSWORDS_LIST[0];
     const randomGender = GENDERS[Math.floor(Math.random() * GENDERS.length)];
     const randomBirthYear = getRandomBirthYear();
     
@@ -571,7 +590,7 @@ async function confirmGmailCreation() {
 }
 
 // ========================================
-// سحب الأموال
+// سحب الأموال (الحد الأدنى 30 جنيه)
 // ========================================
 
 function showWithdrawModal() {
@@ -618,7 +637,7 @@ async function submitWithdrawRequest() {
 }
 
 // ========================================
-// عرض السجلات (مع رسالة تحميل)
+// عرض السجلات
 // ========================================
 
 async function showGmailLogs() {
@@ -627,9 +646,8 @@ async function showGmailLogs() {
         return;
     }
     
-    // رسالة تحميل
     const tbody = document.getElementById('gmailLogsBody');
-    tbody.innerHTML = '<tr><td colspan="3" class="loading-data">⏳ جاري التحميل...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="3" class="loading-data">⏳ جاري التحميل...<\/td><\/tr>';
     
     setButtonLoading('gmailLogsBtn', true, 'جاري التحميل...');
     const result = await callAPI('getMyGmails', { accountNumber: currentAccountNumber });
@@ -643,9 +661,8 @@ async function showGmailLogs() {
         }
         
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" class="no-data">📭 لا توجد جميلات</td></tr>';
+            tbody.innerHTML = '<td><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>';
         } else {
-            // عكس الترتيب عشان الأحدث يظهر أولاً
             const reversed = [...filtered].reverse();
             tbody.innerHTML = reversed.map(rec => {
                 let statusText = '', statusClass = '';
@@ -666,18 +683,16 @@ async function showGmailLogs() {
                 const displayGmail = rec.gmail.replace('@gmail.com', '');
                 const formattedDate = new Date(rec.timestamp).toLocaleDateString('ar-EG');
                 
-                return `
-                    <tr>
-                        <td style="direction: ltr;">${displayGmail}</td>
-                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                        <td>${formattedDate}</td>
-                    </tr>
-                `;
+                return `<tr>
+                    <td style="direction: ltr;">${displayGmail}<\/td>
+                    <td><span class="status-badge ${statusClass}">${statusText}<\/span><\/td>
+                    <td>${formattedDate}<\/td>
+                <\/tr>`;
             }).join('');
         }
         document.getElementById('gmailLogsModal').classList.remove('hidden');
     } else {
-        tbody.innerHTML = '<tr><td colspan="3" class="no-data">❌ حدث خطأ في تحميل السجلات</td></tr>';
+        tbody.innerHTML = '<td><td colspan="3" class="no-data">❌ حدث خطأ في تحميل السجلات<\/td><\/tr>';
         showToast('حدث خطأ في تحميل السجلات', true);
     }
 }
@@ -689,7 +704,7 @@ async function showWithdrawLogs() {
     }
     
     const tbody = document.getElementById('withdrawLogsBody');
-    tbody.innerHTML = '<tr><td colspan="4" class="loading-data">⏳ جاري التحميل...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" class="loading-data">⏳ جاري التحميل...<\/td><\/tr>';
     
     setButtonLoading('withdrawLogsBtn', true, 'جاري التحميل...');
     const result = await callAPI('getMyWithdrawals', { accountNumber: currentAccountNumber });
@@ -703,7 +718,7 @@ async function showWithdrawLogs() {
         }
         
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="no-data">📭 لا توجد سحوبات</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="no-data">📭 لا توجد سحوبات<\/td><\/tr>';
         } else {
             const reversed = [...filtered].reverse();
             tbody.innerHTML = reversed.map(w => {
@@ -721,19 +736,17 @@ async function showWithdrawLogs() {
                     statusClass = 'status-rejected'; 
                 }
                 const formattedDate = new Date(w.timestamp).toLocaleDateString('ar-EG');
-                return `
-                    <tr>
-                        <td>${w.wallet}</td>
-                        <td>${w.amount} ج.م</td>
-                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                        <td>${formattedDate}</td>
-                    </tr>
-                `;
+                return `<tr>
+                    <td>${w.wallet}<\/td>
+                    <td>${w.amount} ج.م<\/td>
+                    <td><span class="status-badge ${statusClass}">${statusText}<\/span><\/td>
+                    <td>${formattedDate}<\/td>
+                <\/tr>`;
             }).join('');
         }
         document.getElementById('withdrawLogsModal').classList.remove('hidden');
     } else {
-        tbody.innerHTML = '<tr><td colspan="4" class="no-data">❌ حدث خطأ في تحميل السجلات</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="no-data">❌ حدث خطأ في تحميل السجلات<\/td><\/tr>';
         showToast('حدث خطأ في تحميل السجلات', true);
     }
 }
@@ -787,6 +800,168 @@ async function init() {
     const withdrawFilter = document.getElementById('withdrawStatusFilter');
     if (gmailFilter) gmailFilter.addEventListener('change', showGmailLogs);
     if (withdrawFilter) withdrawFilter.addEventListener('change', showWithdrawLogs);
+    
 }
+// ========================================
+// التحكم في ظهور شاشة التسجيل والرئيسية
+// ========================================
+
+// دالة لإظهار شاشة التسجيل وإخفاء الرئيسية
+function showRegisterScreen() {
+    const registerScreen = document.getElementById('registerScreen');
+    const mainScreen = document.getElementById('mainScreen');
+    
+    if (registerScreen) registerScreen.classList.remove('hidden');
+    if (mainScreen) mainScreen.classList.add('hidden');
+}
+
+// دالة لإظهار الشاشة الرئيسية وإخفاء التسجيل
+function showMainScreen() {
+    const registerScreen = document.getElementById('registerScreen');
+    const mainScreen = document.getElementById('mainScreen');
+    
+    if (registerScreen) registerScreen.classList.add('hidden');
+    if (mainScreen) mainScreen.classList.remove('hidden');
+}
+
+// التحقق من التسجيل عند تحميل الصفحة
+function checkRegistration() {
+    const isRegistered = localStorage.getItem('accountNumber');
+    const deviceId = localStorage.getItem('deviceId');
+    
+    if (isRegistered && deviceId) {
+        // الجهاز مسجل → اظهر الشاشة الرئيسية
+        showMainScreen();
+    } else {
+        // الجهاز مش مسجل → اظهر شاشة التسجيل
+        showRegisterScreen();
+    }
+}
+
+// ========================================
+// دالة التسجيل
+// ========================================
+
+async function registerDevice() {
+    const deviceId = getDeviceId();
+    const savedAccount = localStorage.getItem('accountNumber');
+    
+    // لو فيه حساب موجود بالفعل
+    if (savedAccount) {
+        currentAccountNumber = savedAccount;
+        const result = await callAPI('getBalance', { accountNumber: savedAccount });
+        
+        if (result && result.success === true) {
+            currentBalance = parseFloat(result.balance) || 0;
+            currentPendingBalance = parseFloat(result.pendingBalance) || 0;
+            currentBlocked = result.blocked === true;
+            
+            if (currentBlocked) {
+                showToast('⚠️ حسابك محظور!', true);
+                return false;
+            }
+            
+            await loadServicePrice();
+            showMainScreen();
+            startBalanceUpdates();
+            showToast('تم تسجيل الدخول بنجاح!');
+            return true;
+        } else {
+            localStorage.removeItem('accountNumber');
+        }
+    }
+    
+    // تسجيل جديد
+    setButtonLoading('registerBtn', true, 'جاري التسجيل...');
+    const accountNumber = 'ACC' + Math.floor(Math.random() * 100000) + Date.now().toString().slice(-6);
+    const result = await callAPI('register', { accountNumber, deviceId });
+    setButtonLoading('registerBtn', false);
+    
+    if (result && result.success === true) {
+        localStorage.setItem('accountNumber', accountNumber);
+        localStorage.setItem('deviceId', deviceId);
+        currentAccountNumber = accountNumber;
+        currentBlocked = false;
+        currentBalance = 0;
+        currentPendingBalance = 0;
+        
+        const balanceEl = document.getElementById('balance');
+        const pendingEl = document.getElementById('pendingBalance');
+        if (balanceEl) balanceEl.textContent = '0';
+        if (pendingEl) pendingEl.textContent = '0';
+        
+        showToast('✅ تم تسجيل الجهاز بنجاح!');
+        await loadServicePrice();
+        showMainScreen();
+        startBalanceUpdates();
+        return true;
+    } else {
+        showToast(result?.error || 'فشل التسجيل، حاول مرة أخرى', true);
+        return false;
+    }
+}
+
+// ========================================
+// بدء التشغيل
+// ========================================
+
+async function init() {
+    // أول حاجة: نتحقق من التسجيل ونظهر الشاشة المناسبة
+    checkRegistration();
+    
+    // ربط زر التسجيل
+    const registerBtn = document.getElementById('registerBtn');
+    if (registerBtn) {
+        registerBtn.addEventListener('click', async () => {
+            await registerDevice();
+        });
+    }
+    
+    // إذا كان فيه حساب مسجل، نحمل البيانات
+    const savedAccount = localStorage.getItem('accountNumber');
+    if (savedAccount) {
+        currentAccountNumber = savedAccount;
+        await loadBalance();
+        await loadServicePrice();
+        startBalanceUpdates();
+    }
+    
+    // ربط باقي الأزرار
+    const createBtn = document.getElementById('createGmailBtn');
+    const confirmBtn = document.getElementById('confirmCreateBtn');
+    const withdrawBtn = document.getElementById('withdrawBtn');
+    const submitWithdraw = document.getElementById('submitWithdrawBtn');
+    const gmailLogs = document.getElementById('gmailLogsBtn');
+    const withdrawLogs = document.getElementById('withdrawLogsBtn');
+    
+    if (createBtn) createBtn.addEventListener('click', showCreateGmailModal);
+    if (confirmBtn) confirmBtn.addEventListener('click', confirmGmailCreation);
+    if (withdrawBtn) withdrawBtn.addEventListener('click', showWithdrawModal);
+    if (submitWithdraw) submitWithdraw.addEventListener('click', submitWithdrawRequest);
+    if (gmailLogs) gmailLogs.addEventListener('click', showGmailLogs);
+    if (withdrawLogs) withdrawLogs.addEventListener('click', showWithdrawLogs);
+    
+    // إغلاق النوافذ المنبثقة
+    document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const modal = e.target.closest('.modal');
+            if (modal) modal.classList.add('hidden');
+        });
+    });
+    
+    window.addEventListener('click', (e) => {
+        if (e.target.classList && e.target.classList.contains('modal')) {
+            e.target.classList.add('hidden');
+        }
+    });
+    
+    const gmailFilter = document.getElementById('gmailStatusFilter');
+    const withdrawFilter = document.getElementById('withdrawStatusFilter');
+    if (gmailFilter) gmailFilter.addEventListener('change', showGmailLogs);
+    if (withdrawFilter) withdrawFilter.addEventListener('change', showWithdrawLogs);
+}
+
+// بدء التطبيق
+window.addEventListener('DOMContentLoaded', init);
 
 window.addEventListener('DOMContentLoaded', init);
