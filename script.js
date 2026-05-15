@@ -1,5 +1,5 @@
 // ========================================
-// B Gmail - script.js (النسخة النهائية مع زر تغيير الجميل ورسالة الاحتفاظ بالصورة)
+// B Gmail - script.js (النسخة النهائية الكاملة)
 // ========================================
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhqm0X3ZotU1CTxYyPDWgESbQPJuCvcs4MkGjgyPNXB4M7pUot_L1DsIk6bAF8lQHv/exec';
@@ -174,6 +174,7 @@ const GMAIL_PREFIXES = [
     "zoethompson", "ethangreen", "emilyevans", "jacklewis", "avawright",
     "gabrielclark", "miamartin", "oliverdavis"
 ];
+ 
 
 const PASSWORDS_LIST = ["aass1122"];
 const GENDERS = ["ذكر", "أنثى"];
@@ -554,8 +555,15 @@ function recordGmailCreation() {
 }
 
 // ========================================
-// زر تغيير الجميل
+// إنشاء Gmail مع رفع الصورة
 // ========================================
+
+function displayGmailData(data) {
+    document.getElementById('generatedName').innerHTML = `${data.name} <button class="copy-btn" onclick="copyToClipboard('${data.name.replace(/'/g, "\\'")}', 'الاسم')">📋 نسخ</button>`;
+    document.getElementById('generatedGmail').innerHTML = `${data.gmail} <button class="copy-btn" onclick="copyToClipboard('${data.gmail.replace(/'/g, "\\'")}', 'البريد')">📋 نسخ</button>`;
+    document.getElementById('generatedPassword').innerHTML = `${data.password} <button class="copy-btn" onclick="copyToClipboard('${data.password.replace(/'/g, "\\'")}', 'كلمة السر')">📋 نسخ</button>`;
+    document.getElementById('generatedGenderAge').textContent = `${data.gender} / ${data.birthYear}`;
+}
 
 async function changeGmail() {
     if (!currentGeneratedData) {
@@ -565,18 +573,15 @@ async function changeGmail() {
     
     const result = await Swal.fire({
         title: '🔄 تغيير الجميل',
-        html: '<strong>هل الجميل مستخدم أو تريد تغييره؟</strong><br><br>سيتم إنشاء بريد جديد بدلاً من الحالي.<br>سيتم حفظ الصورة المرفوعة مع البيانات الجديدة.',
+        html: '<strong>هل الجميل مستخدم أو تريد تغييره؟</strong><br><br>سيتم إنشاء بريد جديد بدلاً من الحالي.',
         icon: 'question',
         showCancelButton: true,
-        confirmButtonText: '✅ نعم، تغيير الجميل',
+        confirmButtonText: '✅ نعم، تغيير',
         cancelButtonText: '❌ إلغاء'
     });
     
     if (!result.isConfirmed) return;
     
-    setButtonLoading('createGmailBtn', true);
-    
-    // إنشاء بيانات جديدة مع الحفاظ على الاسم والجنس وسنة الميلاد
     const newGmailData = {
         name: currentGeneratedData.name,
         gmail: generateUniqueGmail(),
@@ -588,20 +593,7 @@ async function changeGmail() {
     currentGeneratedData = newGmailData;
     saveGmailRequestPermanently(currentGeneratedData);
     displayGmailData(currentGeneratedData);
-    
-    setButtonLoading('createGmailBtn', false);
     showToast('✅ تم تغيير البريد الإلكتروني بنجاح', false);
-}
-
-// ========================================
-// إنشاء Gmail مع رفع الصورة ورسالة الاحتفاظ بها
-// ========================================
-
-function displayGmailData(data) {
-    document.getElementById('generatedName').innerHTML = `${data.name} <button class="copy-btn" onclick="copyToClipboard('${data.name.replace(/'/g, "\\'")}', 'الاسم')">📋 نسخ</button>`;
-    document.getElementById('generatedGmail').innerHTML = `${data.gmail} <button class="copy-btn" onclick="copyToClipboard('${data.gmail.replace(/'/g, "\\'")}', 'البريد')">📋 نسخ</button>`;
-    document.getElementById('generatedPassword').innerHTML = `${data.password} <button class="copy-btn" onclick="copyToClipboard('${data.password.replace(/'/g, "\\'")}', 'كلمة السر')">📋 نسخ</button>`;
-    document.getElementById('generatedGenderAge').textContent = `${data.gender} / ${data.birthYear}`;
 }
 
 async function showCreateGmailModal() {
@@ -650,7 +642,7 @@ async function confirmGmailCreation() {
     
     const confirmed = await Swal.fire({
         title: 'تأكيد إنشاء الجميل',
-        html: '⚠️ <strong>تحذير هام!</strong><br><br>هل قمت بإنشاء حساب Gmail بنفس البيانات الموضحة أعلاه؟<br><br><strong>📸 ملاحظة مهمة:</strong><br>يرجى الاحتفاظ بالصورة (سكرين شوت) لحين تحويل المبلغ من الرصيد المتجمد إلى الرصيد الحالي.',
+        html: '⚠️ <strong>تحذير هام!</strong><br><br>هل قمت بإنشاء حساب Gmail بنفس البيانات الموضحة أعلاه؟<br><br>📸 <strong>ملاحظة مهمة:</strong><br>يرجى الاحتفاظ بالصورة (سكرين شوت) لحين تحويل المبلغ من الرصيد المتجمد إلى الرصيد الحالي.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: '✅ نعم، تم الإنشاء',
@@ -706,7 +698,6 @@ async function confirmGmailCreation() {
     document.getElementById('createModal').classList.add('hidden');
     clearPermanentGmailRequest();
     
-    // رسالة التأكيد مع تذكير بالاحتفاظ بالصورة
     Swal.fire({
         icon: 'success',
         title: 'تم الإرسال بنجاح!',
@@ -783,7 +774,7 @@ async function showGmailLogs() {
         
         const tbody = document.getElementById('gmailLogsBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>';
+            tbody.innerHTML = '<td><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>';
         } else {
             tbody.innerHTML = filtered.reverse().map(rec => {
                 let statusText = '', statusClass = '';
@@ -875,112 +866,4 @@ async function init() {
     document.getElementById('doLoginBtn')?.addEventListener('click', login);
     document.getElementById('showRegisterBtn')?.addEventListener('click', showRegisterScreen);
     document.getElementById('logoutBtn')?.addEventListener('click', logout);
-    document.getElementById('createGmailBtn')?.addEventListener('click', showCreateGmailModal);
-    document.getElementById('confirmCreateBtn')?.addEventListener('click', confirmGmailCreation);
-    document.getElementById('changeGmailBtn')?.addEventListener('click', changeGmail);
-    document.getElementById('withdrawBtn')?.addEventListener('click', showWithdrawModal);
-    document.getElementById('submitWithdrawBtn')?.addEventListener('click', submitWithdrawRequest);
-    document.getElementById('gmailLogsBtn')?.addEventListener('click', showGmailLogs);
-    document.getElementById('withdrawLogsBtn')?.addEventListener('click', showWithdrawLogs);
-    
-    document.querySelectorAll('.close-modal').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const modal = e.target.closest('.modal');
-            if (modal && modal.id === 'createModal' && isRequestLocked && currentGeneratedData) {
-                Swal.fire({
-                    title: '⚠️ طلب قيد الإنشاء',
-                    text: 'لا يمكنك إغلاق هذه النافذة قبل إكمال الطلب',
-                    icon: 'warning',
-                    confirmButtonText: 'حسناً'
-                });
-                return;
-            }
-            modal?.classList.add('hidden');
-        });
-    });
-    
-    window.addEventListener('click', (e) => {
-        if (e.target.classList?.contains('modal') && e.target.id === 'createModal' && isRequestLocked && currentGeneratedData) {
-            Swal.fire({
-                title: '⚠️ طلب قيد الإنشاء',
-                text: 'لا يمكنك إغلاق هذه النافذة قبل إكمال الطلب',
-                icon: 'warning',
-                confirmButtonText: 'حسناً'
-            });
-            return;
-        }
-        if (e.target.classList?.contains('modal')) {
-            e.target.classList.add('hidden');
-        }
-    });
-    
-    window.addEventListener('beforeunload', (e) => {
-        if (isRequestLocked && currentGeneratedData) {
-            e.preventDefault();
-            e.returnValue = 'لديك طلب Gmail غير مكتمل. هل تريد المغادرة؟ سيتم حفظ الطلب تلقائياً.';
-            saveGmailRequestPermanently(currentGeneratedData);
-            return e.returnValue;
-        }
-    });
-    
-    document.getElementById('gmailStatusFilter')?.addEventListener('change', showGmailLogs);
-    document.getElementById('withdrawStatusFilter')?.addEventListener('change', showWithdrawLogs);
-    
-    window.copyToClipboard = copyToClipboard;
-    window.togglePass = togglePass;
-    window.changeGmail = changeGmail;
-    
-    const savedPhone = localStorage.getItem('userPhone');
-    const savedPassword = localStorage.getItem('userPassword');
-    
-    if (savedPhone && savedPassword) {
-        currentUser = { phone: savedPhone };
-        const result = await callAPI('login', { phone: cleanPhone(savedPhone), pass: savedPassword });
-        if (result?.result === "found") {
-            currentUser = { phone: result.phone, name: result.name };
-            currentBalance = parseFloat(result.balance) || 0;
-            currentPendingBalance = parseFloat(result.pendingBalance) || 0;
-            currentBlocked = result.blocked === "TRUE";
-            currentStatusText = result.statusText || "نشط";
-            document.getElementById('balance').textContent = currentBalance;
-            document.getElementById('pendingBalance').textContent = currentPendingBalance;
-            
-            if (!currentBlocked) {
-                await loadServicePrice();
-                showMainScreen();
-                startBalanceUpdates();
-                
-                const savedRequest = loadPermanentGmailRequest();
-                if (savedRequest && !currentGeneratedData) {
-                    setTimeout(() => {
-                        Swal.fire({
-                            title: '📦 لديك طلب Gmail غير مكتمل',
-                            text: 'هل تريد استئناف إنشاء الجميل السابق؟',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonText: '✅ نعم',
-                            cancelButtonText: '❌ لا',
-                            allowOutsideClick: false
-                        }).then((res) => {
-                            if (res.isConfirmed) {
-                                currentGeneratedData = savedRequest;
-                                displayGmailData(currentGeneratedData);
-                                document.getElementById('createModal').classList.remove('hidden');
-                            } else {
-                                clearPermanentGmailRequest();
-                            }
-                        });
-                    }, 500);
-                }
-            } else {
-                showLoginScreen();
-            }
-        } else {
-            showLoginScreen();
-        }
-    } else {
-        showRegisterScreen();
-    }
-}
-
-window.addEventListener('DOMContentLoaded', init);
+    document.getElementById('createGmailBtn')?.addEventListener('click', showCreateG
