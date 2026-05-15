@@ -1,5 +1,5 @@
 // ========================================
-// B Gmail - script.js (النسخة النهائية الكاملة)
+// B Gmail - script.js (النسخة النهائية مع زر تغيير الجميل ورسالة الاحتفاظ بالصورة)
 // ========================================
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhqm0X3ZotU1CTxYyPDWgESbQPJuCvcs4MkGjgyPNXB4M7pUot_L1DsIk6bAF8lQHv/exec';
@@ -22,7 +22,7 @@ let currentGeneratedData = null;
 let isRequestLocked = false;
 
 // ========================================
-// الأسماء والبيانات المحلية
+// الأسماء الكاملة (كل الأسماء التي بعثتها)
 // ========================================
 
 const NAMES_LIST = [
@@ -35,8 +35,72 @@ const NAMES_LIST = [
     "Lucas Phillips", "Lily Campbell", "Jack Parker", "Aria Roberts", "Aiden Collins",
     "Zoey Richardson", "Samuel Murphy", "Mila Sanders", "Henry Cook", "Stella Morris",
     "Owen Reed", "Natalie Bailey", "Gabriel Bell", "Zoe Rivera", "Isaac Cooper",
-    "Hannah Ward", "Caleb Murphy", "Leah Peterson", "Elijah Baker", "Victoria Phillips"
+    "Hannah Ward", "Caleb Murphy", "Leah Peterson", "Elijah Baker", "Victoria Phillips",
+    "Pierre Dubois", "Marie Lefebvre", "Louis Moreau", "Sophie Laurent", "Jean Dupont",
+    "Claire Rousseau", "Paul Martin", "Chloé Blanc", "Jacques Girard", "Isabelle Dumont",
+    "Friedrich Müller", "Anna Schmidt", "Hans Weber", "Julia Fischer", "Karl Braun",
+    "Laura Wagner", "Wilhelm Koch", "Lena Zimmer", "Stefan Klein", "Eva Wolf",
+    "Max Becker", "Nora Schmidt", "Franz Meyer", "Lena Fischer", "Erik Richter",
+    "Johanna Hartmann", "Christian Schulz", "Maria Klein", "Georg Schneider", "Emma Keller",
+    "Marco Rossi", "Sofia Bianchi", "Luca Ferrari", "Giulia Romano", "Giovanni Greco",
+    "Alessia Conti", "Matteo Esposito", "Valentina Morelli", "Alessandro Ricci", "Serena Galli",
+    "Miguel Martínez", "Isabel López", "Javier García", "Ana Fernández", "Alejandro Ruiz",
+    "Marta Gómez", "Carlos Herrera", "Elena Vargas", "Sergio Morales", "Paula Romero",
+    "Ivan Petrov", "Olga Ivanova", "Dmitry Sokolov", "Natalia Orlova", "Alexei Kuznetsov",
+    "Maria Pavlova", "Sergei Popov", "Elena Mikhailova", "Nikolai Smirnov", "Irina Fedorova",
+    "Wei Zhang", "Li Wei", "Chen Liu", "Mei Wang", "Jian Zhang", "Ling Chen",
+    "Hao Yang", "Yumi Li", "Jun Xu", "Xia Chen", "Mustafa Yılmaz", "Elif Demir",
+    "Ahmet Kaya", "Zeynep Yurt", "Mehmet Aslan", "Selin Yılmaz", "Hasan Korkmaz",
+    "Derya Çelik", "Emre Yalçın", "Aylin Karaca", "Hakan Özkan", "Esra Akman",
+    "Raj Patel", "Priya Sharma", "Arun Gupta", "Aarti Desai", "Vijay Kumar",
+    "Sunita Rao", "Amit Mehta", "Neha Agarwal", "Carlos Silva", "Maria Oliveira",
+    "João Santos", "Ana Costa", "Pedro Almeida", "Beatriz Rodrigues", "Luis Pereira",
+    "Fernanda Martins", "Marcos Lima", "Juliana Sousa", "Rafael Carvalho", "Larissa Ferreira",
+    "Liam Gallagher", "Ava Fitzgerald", "Noah Anderson", "Emily Davidson", "Ethan Brooks",
+    "Sophia Carter", "Logan Harris", "Mia Palmer", "Mason Gray", "Isabella Bennett",
+    "Olivia Wood", "Ethan Clarke", "Isabella Scott", "Gabriel Hunter", "Zoe Green",
+    "Ryan Carter", "Emily Lewis", "Lucas Bennett", "Chloe Adams", "Jack Anderson",
+    "Luca Martini", "Julia Roberts", "James Carter", "Lily Adams", "Henry Clarke",
+    "Ava Martinez", "William Johnson", "Mia Wilson", "Alexander Thompson", "Ella White",
+    "Samuel Evans", "Charlotte King", "Oliver Davis", "Grace Lee", "Noah Scott",
+    "Zoe Harris", "Daniel Roberts", "Sofia Moore", "Thomas Harris", "Lily Robinson",
+    "Gabriella Ortiz", "Marco Lombardi", "Elena Rossi", "Victor Alvarado", "Ana Silva",
+    "Marcus Dupuis", "Chloe Watson", "Ryan Lee", "Amelia Peterson", "William Johnson",
+    "Sophie Kim", "Hugo Moreno", "Natalie Smith", "Eli Garcia", "Mia Perez",
+    "Olivia Rodriguez", "Adrian Lopez", "Isla Martin", "Sebastian Clarke", "Maya Sanders",
+    "Evelyn Lewis", "Asher Walker", "Lily Martinez", "Leo Young", "Ella Foster",
+    "Emily Rivera", "Jacob Murphy", "Clara Evans", "Adam King", "Mila James",
+    "Nathan Roberts", "Anna Collins", "Henry Walker", "Sophie Davis", "Leo Johnson",
+    "Isabella Stewart", "Liam Young", "Nora Bennett", "Lucas Garcia", "Sofia Allen",
+    "William Edwards", "Grace Harris", "Jack Robinson", "Mia Sanchez", "Oliver Green",
+    "Ella Hughes", "Gabriel Adams", "Aria Brooks", "Noah White", "Ava Morgan",
+    "Maya Campbell", "Samuel Moore", "Layla Rogers", "Anthony Ward", "Hannah Sanders",
+    "Isaac Peterson", "Ruby Ramirez", "Lucas Johnson", "Eliana Sullivan", "Evan Murphy",
+    "Alice White", "Owen Thompson", "Emily Harris", "Gabriel Reed", "Ava Lee",
+    "Liam Bennett", "Zoe Parker", "Sebastian Morris", "Lily Gray", "Julian Rivera",
+    "Harper James", "Leo Collins", "Anna Ramirez", "Nathan Taylor", "Amelia Adams",
+    "Henry Roberts", "Scarlett Clark", "Elijah Anderson", "Chloe Morris", "Oliver Hughes",
+    "Isla Parker", "Jacob White", "Mia Evans", "Jack Edwards", "Emily Young",
+    "Lucas Scott", "Ava Hill", "Daniel Mitchell", "Natalie Martin", "Henry Wilson",
+    "Isabella Rodriguez", "Alexander Moore", "Lily Phillips", "Samuel Roberts", "Charlotte Gray",
+    "Ethan Wright", "Emma Young", "James Johnson", "Sophia Bennett", "Benjamin White",
+    "Nora Roberts", "Leo Evans", "Aria Davis", "William Walker", "Mia Lewis",
+    "Gabriel Green", "Evelyn Scott", "Lucas Allen", "Isabella Hughes", "Samuel Clark",
+    "Charlotte Lopez", "Jack Harris", "Lily Sanders", "James Turner", "Amelia Brooks",
+    "Noah Cooper", "Ava Turner", "Lucas Evans", "Emily Ross", "Benjamin Martin",
+    "Sophia Taylor", "Jack Allen", "Ella Moore", "William Martin", "Mia Wright",
+    "Samuel Johnson", "Chloe Davis", "Ethan Davis", "Aria Campbell", "Elijah Thompson",
+    "Lily Martinez", "Jacob Young", "Grace Taylor", "Nathan White", "Emma Stewart",
+    "James Green", "Olivia Adams", "Henry Lewis", "Mia Ross", "Daniel Walker",
+    "Charlotte Anderson", "Alexander Thomas", "Amelia Carter", "Leo White", "Aria Harris",
+    "William Davis", "Lily Johnson", "Samuel Walker", "Sophia King", "Lucas Wilson",
+    "Zoe Thompson", "Ethan Green", "Emily Evans", "Jack Lewis", "Ava Wright",
+    "Gabriel Clark", "Mia Martin", "Oliver Davis"
 ];
+
+// ========================================
+// بادئات الجميل (كما بعثتها بدون dots أو @gmail.com)
+// ========================================
 
 const GMAIL_PREFIXES = [
     "jamesmith", "emmajohnson", "michaelbrown", "oliviawilliams", "davidjones",
@@ -48,7 +112,67 @@ const GMAIL_PREFIXES = [
     "lucasphillips", "lilycampbell", "jackparker", "ariaroberts", "aidencollins",
     "zoeyrichardson", "samuelmurphy", "milasanders", "henrycook", "stellamorris",
     "owenreed", "nataliebailey", "gabrielbell", "zoerivera", "isaaccooper",
-    "hannahward", "calebmurphy", "leahpeterson", "elijahbaker", "victoriaphillips"
+    "hannahward", "calebmurphy", "leahpeterson", "elijahbaker", "victoriaphillips",
+    "pierredubois", "marielefebvre", "luismoreau", "sophielaurent", "jeandupont",
+    "clairerousseau", "paulmartin", "chloeblanc", "jacquesgirard", "isabelledumont",
+    "friedrichmüller", "annaschmidt", "hansweber", "juliafischer", "karlbraun",
+    "laurawagner", "wilhelmkoch", "lenazimmer", "stefanklein", "evawolf",
+    "maxbecker", "noraschmidt", "franzmeyer", "lenafischer", "erikrichter",
+    "johannahartmann", "christianschulz", "mariaklein", "georgschneider", "emmakeller",
+    "marcorossi", "sofiabianchi", "lucaferrari", "giuliaromano", "giovannigreco",
+    "alessiaconti", "matteoesposito", "valentinamorelli", "alessandroricci", "serenagalli",
+    "miguelmartinez", "isabellopez", "javiergarcia", "anafernandez", "alejandroruiz",
+    "martagomez", "carlosherrera", "elenavargas", "sergiomorales", "paularomero",
+    "ivanpetrov", "olgaivanova", "dmitrysokolov", "nataliaorlova", "alexeikuznetsov",
+    "mariapavlova", "sergeipopov", "elenamikhailova", "nikolaismirnov", "irinafedorova",
+    "weizhang", "liwei", "chenliu", "meiwang", "jianzhang", "lingchen",
+    "haoyang", "yumili", "junxu", "xiachen", "mustafayilmaz", "elifdemir",
+    "ahmetkaya", "zeynepyurt", "mehmetaslan", "selinyilmaz", "hasankorkmaz",
+    "deryacelik", "emreyalcin", "aylinkaraca", "hakanözkan", "esraakman",
+    "rajpatel", "priyasharma", "arungupta", "aartidesai", "vijaykumar",
+    "sunitarao", "amitmehta", "nehaagarwal", "carlossilva", "mariaoliveira",
+    "joaosantos", "anacosta", "pedroalmeida", "beatrizrodrigues", "luispereira",
+    "fernandamartins", "marcoslima", "julianasousa", "rafaelcarvalho", "larissaferreira",
+    "liamgallagher", "avafitzgerald", "noahanderson", "emilydavidson", "ethanbrooks",
+    "sophiacarter", "loganharris", "miapalmer", "masongray", "isabellabennett",
+    "oliviawood", "ethanclarke", "isabellascott", "gabrielhunter", "zoegreen",
+    "ryancarter", "emilylewis", "lucasbennett", "chloeadams", "jackanderson",
+    "lucamartini", "juliaroberts", "jamescarter", "lilyadams", "henryclarke",
+    "avamartinez", "williamjohnson", "miawilson", "alexanderthompson", "ellawhite",
+    "samuelevans", "charlotteking", "oliverdavis", "gracelee", "noahscott",
+    "zoeharris", "danielroberts", "sofiamoore", "thomasharris", "lilyrobinson",
+    "gabriellaortiz", "marcolombardi", "elenarossi", "victoralvarado", "anasilva",
+    "marcusdupuis", "chloewatson", "ryanlee", "ameliapeterson", "williamjohnson",
+    "sophiekim", "hugomoreno", "nataliesmith", "eligarcia", "miaperez",
+    "oliviarodriguez", "adrianlopez", "islamartin", "sebastianclarke", "mayasanders",
+    "evelynlewis", "asherwalker", "lilymartinez", "leoyoung", "ellafoster",
+    "emilyrivera", "jacobmurphy", "claraevans", "adamking", "milajames",
+    "nathanroberts", "annacollins", "henrywalker", "sophiedavis", "leojohnson",
+    "isabellastewart", "liamyoung", "norabennett", "lucasgarcia", "sofiaallen",
+    "williamedwards", "graceharris", "jackrobinson", "miasanchez", "olivergreen",
+    "ellahughes", "gabrieladams", "ariabrooks", "noahwhite", "avamorgan",
+    "mayacampbell", "samuelmoore", "laylarogers", "anthonyward", "hannahsanders",
+    "isaacpeterson", "rubyramirez", "lucasjohnson", "elianasullivan", "evanmurphy",
+    "alicewhite", "owenthompson", "emilyharris", "gabrielreed", "avalee",
+    "liambennett", "zoeparker", "sebastianmorris", "lilygray", "julianrivera",
+    "harperjames", "leocollins", "annaramirez", "nathantaylor", "ameliaadams",
+    "henryroberts", "scarlettclark", "elijahanderson", "chloemorris", "oliverhughes",
+    "islaparker", "jacobwhite", "miaevans", "jackedwards", "emilyyoung",
+    "lucasscott", "avahill", "danielmitchell", "nataliemartin", "henrywilson",
+    "isabellarodriguez", "alexandermoore", "lilyphillips", "samuelroberts", "charlottegray",
+    "ethanwright", "emmayoung", "jamesjohnson", "sophiabennett", "benjaminwhite",
+    "noraroberts", "leoevans", "ariadavis", "williamwalker", "mialewis",
+    "gabrielgreen", "evelynscott", "lucasallen", "isabellahughes", "samuelclark",
+    "charlottelopez", "jackharris", "lilysanders", "jamesturner", "ameliabrooks",
+    "noahcooper", "avaturner", "lucasevans", "emilyross", "benjaminmartin",
+    "sophiataylor", "jackallen", "ellamoore", "williammartin", "miawright",
+    "samueljohnson", "chloedavis", "ethandavis", "ariacampbell", "elijahthompson",
+    "lilymartinez", "jacobyoung", "gracetaylor", "nathanwhite", "emmastewart",
+    "jamesgreen", "oliviaadams", "henrylewis", "miaross", "danielwalker",
+    "charlotteanderson", "alexanderthomas", "ameliacarter", "leowhite", "ariaharris",
+    "williamdavis", "lilyjohnson", "samuelwalker", "sophiaking", "lucaswilson",
+    "zoethompson", "ethangreen", "emilyevans", "jacklewis", "avawright",
+    "gabrielclark", "miamartin", "oliverdavis"
 ];
 
 const PASSWORDS_LIST = ["aass1122"];
@@ -430,7 +554,47 @@ function recordGmailCreation() {
 }
 
 // ========================================
-// إنشاء Gmail مع رفع الصورة
+// زر تغيير الجميل
+// ========================================
+
+async function changeGmail() {
+    if (!currentGeneratedData) {
+        showToast('لا يوجد طلب نشط لتغييره', true);
+        return;
+    }
+    
+    const result = await Swal.fire({
+        title: '🔄 تغيير الجميل',
+        html: '<strong>هل الجميل مستخدم أو تريد تغييره؟</strong><br><br>سيتم إنشاء بريد جديد بدلاً من الحالي.<br>سيتم حفظ الصورة المرفوعة مع البيانات الجديدة.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '✅ نعم، تغيير الجميل',
+        cancelButtonText: '❌ إلغاء'
+    });
+    
+    if (!result.isConfirmed) return;
+    
+    setButtonLoading('createGmailBtn', true);
+    
+    // إنشاء بيانات جديدة مع الحفاظ على الاسم والجنس وسنة الميلاد
+    const newGmailData = {
+        name: currentGeneratedData.name,
+        gmail: generateUniqueGmail(),
+        password: PASSWORDS_LIST[0],
+        gender: currentGeneratedData.gender,
+        birthYear: currentGeneratedData.birthYear
+    };
+    
+    currentGeneratedData = newGmailData;
+    saveGmailRequestPermanently(currentGeneratedData);
+    displayGmailData(currentGeneratedData);
+    
+    setButtonLoading('createGmailBtn', false);
+    showToast('✅ تم تغيير البريد الإلكتروني بنجاح', false);
+}
+
+// ========================================
+// إنشاء Gmail مع رفع الصورة ورسالة الاحتفاظ بها
 // ========================================
 
 function displayGmailData(data) {
@@ -444,7 +608,7 @@ async function showCreateGmailModal() {
     if (isRequestLocked && currentGeneratedData) {
         Swal.fire({
             title: '⚠️ لديك طلب قيد الإنشاء',
-            text: 'يرجى إكمال الطلب الحالي أو إلغاؤه أولاً',
+            text: 'يرجى إكمال الطلب الحالي أو تغييره أولاً',
             icon: 'warning',
             confirmButtonText: 'حسناً'
         });
@@ -486,7 +650,7 @@ async function confirmGmailCreation() {
     
     const confirmed = await Swal.fire({
         title: 'تأكيد إنشاء الجميل',
-        html: '⚠️ <strong>تحذير هام!</strong><br><br>هل قمت بإنشاء حساب Gmail بنفس البيانات الموضحة أعلاه؟<br><br>بعد التأكيد، سيتم إرسال الطلب مع الصورة للمراجعة',
+        html: '⚠️ <strong>تحذير هام!</strong><br><br>هل قمت بإنشاء حساب Gmail بنفس البيانات الموضحة أعلاه؟<br><br><strong>📸 ملاحظة مهمة:</strong><br>يرجى الاحتفاظ بالصورة (سكرين شوت) لحين تحويل المبلغ من الرصيد المتجمد إلى الرصيد الحالي.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: '✅ نعم، تم الإنشاء',
@@ -541,7 +705,15 @@ async function confirmGmailCreation() {
     await loadBalance();
     document.getElementById('createModal').classList.add('hidden');
     clearPermanentGmailRequest();
-    Swal.fire({ icon: 'success', title: 'تم الإرسال!', text: 'سيتم مراجعة الجميل خلال 2-4 أيام', timer: 2000, showConfirmButton: false });
+    
+    // رسالة التأكيد مع تذكير بالاحتفاظ بالصورة
+    Swal.fire({
+        icon: 'success',
+        title: 'تم الإرسال بنجاح!',
+        html: 'سيتم مراجعة الجميل خلال 2-4 أيام.<br><br>📸 <strong>تذكير هام:</strong><br>يرجى الاحتفاظ بالصورة (سكرين شوت) لحين تحويل المبلغ من الرصيد المتجمد إلى الرصيد الحالي.',
+        timer: 5000,
+        showConfirmButton: true
+    });
 }
 
 // ========================================
@@ -611,7 +783,7 @@ async function showGmailLogs() {
         
         const tbody = document.getElementById('gmailLogsBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<td><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>';
+            tbody.innerHTML = '<tr><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>';
         } else {
             tbody.innerHTML = filtered.reverse().map(rec => {
                 let statusText = '', statusClass = '';
@@ -705,6 +877,7 @@ async function init() {
     document.getElementById('logoutBtn')?.addEventListener('click', logout);
     document.getElementById('createGmailBtn')?.addEventListener('click', showCreateGmailModal);
     document.getElementById('confirmCreateBtn')?.addEventListener('click', confirmGmailCreation);
+    document.getElementById('changeGmailBtn')?.addEventListener('click', changeGmail);
     document.getElementById('withdrawBtn')?.addEventListener('click', showWithdrawModal);
     document.getElementById('submitWithdrawBtn')?.addEventListener('click', submitWithdrawRequest);
     document.getElementById('gmailLogsBtn')?.addEventListener('click', showGmailLogs);
@@ -755,6 +928,7 @@ async function init() {
     
     window.copyToClipboard = copyToClipboard;
     window.togglePass = togglePass;
+    window.changeGmail = changeGmail;
     
     const savedPhone = localStorage.getItem('userPhone');
     const savedPassword = localStorage.getItem('userPassword');
