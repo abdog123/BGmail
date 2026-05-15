@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>B Gmail - منصة إنشاء حسابات Gmail</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <div id="app">
         <!-- ======================================== -->
-        <!-- شاشة التسجيل (تظهر أول مرة فقط) -->
+        <!-- شاشة التسجيل -->
         <!-- ======================================== -->
         <div id="registerScreen" class="screen">
             <div class="card">
                 <div class="welcome-icon">📧</div>
                 <h1>B Gmail</h1>
-                <p>مرحباً بك! منصة متخصصة في إنشاء حسابات Gmail بسرعة فائقة وأمان عالي.</p>
+                <p>منصة متخصصة في إنشاء حسابات Gmail بسرعة فائقة وأمان عالي</p>
+                
                 <div class="features-list">
                     <div class="feature">🚀 سرعة فائقة في الإنشاء</div>
                     <div class="feature">👤 أكثر من 1000 اسم حقيقي</div>
@@ -23,17 +25,68 @@
                     <div class="feature">⏱️ مراجعة سريعة خلال 2-4 أيام</div>
                     <div class="feature">💰 سحب الأموال بسهولة (الحد الأدنى 30 ج.م)</div>
                 </div>
-                <button id="registerBtn" class="btn-primary">🔐 تسجيل الجهاز</button>
+                
+                <div class="form-group">
+                    <label>📱 رقم الهاتف:</label>
+                    <input type="tel" id="regPhone" placeholder="مثال: 01012345678" class="form-input" dir="ltr">
+                </div>
+                <div class="form-group">
+                    <label>👤 الاسم الكامل:</label>
+                    <input type="text" id="regName" placeholder="أدخل اسمك الكامل" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>🔐 كلمة المرور:</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="regPassword" placeholder="أدخل كلمة المرور" class="form-input">
+                        <button type="button" class="toggle-pass" onclick="togglePass('regPassword')">👁️</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>🔐 تأكيد كلمة المرور:</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="regConfirmPassword" placeholder="أعد إدخال كلمة المرور" class="form-input">
+                        <button type="button" class="toggle-pass" onclick="togglePass('regConfirmPassword')">👁️</button>
+                    </div>
+                </div>
+                
+                <button id="registerBtn" class="btn-primary">🔐 تسجيل حساب جديد</button>
+                <button id="showLoginBtn" class="btn-secondary">🔑 لدي حساب بالفعل</button>
             </div>
         </div>
 
         <!-- ======================================== -->
-        <!-- الشاشة الرئيسية (تظهر بعد التسجيل) -->
+        <!-- شاشة تسجيل الدخول -->
+        <!-- ======================================== -->
+        <div id="loginScreen" class="screen hidden">
+            <div class="card">
+                <div class="welcome-icon">🔐</div>
+                <h1>تسجيل الدخول</h1>
+                
+                <div class="form-group">
+                    <label>📱 رقم الهاتف:</label>
+                    <input type="tel" id="loginPhone" placeholder="مثال: 01012345678" class="form-input" dir="ltr">
+                </div>
+                <div class="form-group">
+                    <label>🔐 كلمة المرور:</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" class="form-input">
+                        <button type="button" class="toggle-pass" onclick="togglePass('loginPassword')">👁️</button>
+                    </div>
+                </div>
+                
+                <button id="doLoginBtn" class="btn-primary">🔑 دخول</button>
+                <button id="showRegisterBtn" class="btn-secondary">📝 ليس لديك حساب؟ سجل الآن</button>
+            </div>
+        </div>
+
+        <!-- ======================================== -->
+        <!-- الشاشة الرئيسية -->
         <!-- ======================================== -->
         <div id="mainScreen" class="screen hidden">
             <div class="header">
                 <div class="header-top">
                     <h1>B Gmail</h1>
+                    <button id="logoutBtn" class="btn-logout">🚪 تسجيل خروج</button>
                 </div>
                 <div class="balance-card">
                     <div class="balance-item">
@@ -69,7 +122,7 @@
     </div>
 
     <!-- ======================================== -->
-    <!-- نافذة إنشاء Gmail المنبثقة -->
+    <!-- نافذة إنشاء Gmail -->
     <!-- ======================================== -->
     <div id="createModal" class="modal hidden">
         <div class="modal-content">
@@ -80,19 +133,19 @@
             <div class="modal-body">
                 <div class="generated-data">
                     <div class="data-row">
-                        <label>الاسم:</label>
+                        <label>👤 الاسم:</label>
                         <span id="generatedName">---</span>
                     </div>
                     <div class="data-row">
-                        <label>البريد الإلكتروني:</label>
+                        <label>📧 البريد الإلكتروني:</label>
                         <span id="generatedGmail">---</span>
                     </div>
                     <div class="data-row">
-                        <label>كلمة المرور:</label>
+                        <label>🔐 كلمة المرور:</label>
                         <span id="generatedPassword">---</span>
                     </div>
                     <div class="data-row">
-                        <label>الجنس / سنة الميلاد:</label>
+                        <label>⚧ الجنس / سنة الميلاد:</label>
                         <span id="generatedGenderAge">---</span>
                     </div>
                 </div>
@@ -123,14 +176,14 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>رقم المحفظة / الكاش:</label>
+                    <label>🏦 رقم المحفظة / الكاش:</label>
                     <input type="text" id="walletNumber" placeholder="أدخل رقم المحفظة" class="form-input">
                 </div>
                 <div class="form-group">
-                    <label>المبلغ المراد سحبه:</label>
+                    <label>💰 المبلغ المراد سحبه:</label>
                     <input type="number" id="withdrawAmount" placeholder="أدخل المبلغ" class="form-input">
                     <small class="form-hint">الرصيد المتاح: <span id="availableBalanceHint">0</span> ج.م</small>
-                    <small class="form-hint-min">⚠️ الحد الأدنى للسحب هو 30 جنيه</small>
+                    <small class="form-hint-min">⚠️ مصاريف السحب: 5 جنيه + الحد الأدنى 30 جنيه</small>
                 </div>
                 <button id="submitWithdrawBtn" class="btn-primary">إرسال طلب السحب</button>
             </div>
@@ -159,7 +212,7 @@
                     </select>
                 </div>
                 <div class="logs-table-container">
-                    <table class="logs-table" id="gmailLogsTable">
+                    <table class="logs-table">
                         <thead>
                             <tr>
                                 <th>البريد الإلكتروني</th>
@@ -168,7 +221,7 @@
                             </tr>
                         </thead>
                         <tbody id="gmailLogsBody">
-                            <tr><td colspan="3" class="no-data">📭 لا توجد جميلات</td><td style="display:none;"></td><td style="display:none;"></td></tr>
+                            <tr><td colspan="3" class="no-data">📭 لا توجد جميلات</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -195,17 +248,19 @@
                     </select>
                 </div>
                 <div class="logs-table-container">
-                    <table class="logs-table" id="withdrawLogsTable">
+                    <table class="logs-table">
                         <thead>
                             <tr>
                                 <th>رقم المحفظة</th>
-                                <th>المبلغ</th>
+                                <th>المبلغ المطلوب</th>
+                                <th>المصاريف (5ج)</th>
+                                <th>الصافي المستلم</th>
                                 <th>الحالة</th>
                                 <th>التاريخ</th>
                             </tr>
                         </thead>
                         <tbody id="withdrawLogsBody">
-                            <tr><td colspan="4" class="no-data">📭 لا توجد سحوبات</td><td style="display:none;"></td><td style="display:none;"></td><td style="display:none;"></td></tr>
+                            <tr><td colspan="6" class="no-data">📭 لا توجد سحوبات</td></tr>
                         </tbody>
                     </table>
                 </div>
