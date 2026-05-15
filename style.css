@@ -1,3 +1,7 @@
+/* ========================================
+   B Gmail - style.css (التصميم الكامل النهائي)
+   ======================================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -13,6 +17,7 @@ body {
     position: relative;
 }
 
+/* خلفية متحركة */
 body::before {
     content: '';
     position: fixed;
@@ -20,7 +25,7 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.03"><path fill="white" d="M10,10 L90,10 L50,90 Z"/><circle cx="50" cy="50" r="20"/></svg>') repeat;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.03"><path fill="white" d="M10,10 L90,10 L50,90 Z"/><circle cx="50" cy="50" r="20"/><rect x="25" y="25" width="10" height="10"/></svg>') repeat;
     pointer-events: none;
     z-index: 0;
 }
@@ -76,26 +81,44 @@ body::before {
     font-weight: 800;
 }
 
-/* الرسالة الداخلية */
-.inner-message {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border-radius: 24px;
-    padding: 16px;
-    margin-bottom: 24px;
-    text-align: center;
-    border-right: 4px solid #3b82f6;
+.card p {
+    color: #666;
+    margin-bottom: 28px;
+    font-size: 15px;
+    line-height: 1.5;
 }
 
-.inner-message strong {
-    color: #3b82f6;
-    display: block;
-    margin-bottom: 8px;
+/* ======================================== */
+/* المميزات */
+/* ======================================== */
+
+.features-list {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 28px;
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    text-align: right;
 }
 
-.inner-message {
-    color: #cbd5e6;
-    font-size: 13px;
-    line-height: 1.8;
+.feature {
+    padding: 8px 0;
+    color: #333;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.feature:last-child {
+    border-bottom: none;
+}
+
+.feature::before {
+    content: "✓";
+    color: #28a745;
+    font-weight: bold;
+    font-size: 16px;
 }
 
 /* ======================================== */
@@ -524,6 +547,29 @@ button:disabled {
     border: 1px solid #e0e0e0;
 }
 
+/* زر تغيير الجميل الصغير */
+.copy-btn-small {
+    background: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 4px 12px;
+    margin-right: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.copy-btn-small:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+}
+
+.copy-btn-small:active {
+    transform: scale(0.98);
+}
+
 /* ======================================== */
 /* رسائل التحذير */
 /* ======================================== */
@@ -751,4 +797,4 @@ button:disabled {
     text-align: center;
     color: #667eea;
     padding: 20px;
-    }
+}
