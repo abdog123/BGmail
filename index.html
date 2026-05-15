@@ -10,20 +10,20 @@
 <body>
     <div id="app">
         <!-- ======================================== -->
-        <!-- شاشة التسجيل (بشكل احترافي) -->
+        <!-- شاشة التسجيل -->
         <!-- ======================================== -->
         <div id="registerScreen" class="screen">
             <div class="card">
-                <div class="welcome-icon">✨</div>
+                <div class="welcome-icon">📧</div>
                 <h1>B Gmail</h1>
+                <p>منصة متخصصة في إنشاء حسابات Gmail بسرعة فائقة وأمان عالي</p>
                 
-                <!-- الرسالة الداخلية -->
-                <div class="inner-message">
-                    🚀 <strong>أفضل موقع لإنشاء حسابات Gmail</strong><br>
-                    ✓ سرعة فائقة في الإنشاء<br>
-                    ✓ أكثر من 1000 اسم حقيقي<br>
-                    ✓ نظام حماية ذكي<br>
-                    ✓ سحب الأموال بسهولة
+                <div class="features-list">
+                    <div class="feature">🚀 سرعة فائقة في الإنشاء</div>
+                    <div class="feature">👤 أكثر من 1000 اسم حقيقي</div>
+                    <div class="feature">🛡️ نظام حماية ذكي ضد التلاعب</div>
+                    <div class="feature">⏱️ مراجعة سريعة خلال 2-4 أيام</div>
+                    <div class="feature">💰 سحب الأموال بسهولة (الحد الأدنى 30 ج.م)</div>
                 </div>
                 
                 <div class="form-group">
@@ -49,7 +49,7 @@
                     </div>
                 </div>
                 
-                <button id="registerBtn" class="btn-primary">🔐 إنشاء حساب جديد</button>
+                <button id="registerBtn" class="btn-primary">🔐 تسجيل حساب جديد</button>
                 <button id="showLoginBtn" class="btn-secondary">🔑 لدي حساب بالفعل</button>
             </div>
         </div>
@@ -122,12 +122,12 @@
     </div>
 
     <!-- ======================================== -->
-    <!-- نافذة إنشاء Gmail (مع رفع الصورة) -->
+    <!-- نافذة إنشاء Gmail -->
     <!-- ======================================== -->
     <div id="createModal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>📸 إنشاء حساب Gmail جديد</h3>
+                <h3>إنشاء حساب Gmail جديد</h3>
                 <button class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
@@ -139,6 +139,7 @@
                     <div class="data-row">
                         <label>📧 البريد الإلكتروني:</label>
                         <span id="generatedGmail">---</span>
+                        <button id="changeGmailSmallBtn" class="copy-btn-small">🔄 تغيير</button>
                     </div>
                     <div class="data-row">
                         <label>🔐 كلمة المرور:</label>
@@ -154,7 +155,7 @@
                 <div class="form-group">
                     <label>📸 صورة سكرين شوت للحساب (مطلوب):</label>
                     <input type="file" id="gmailScreenshot" accept="image/*" class="form-input">
-                    <small class="form-hint">ارفع صورة للبريد الجديد لتأكيد الملكية (تظهر فقط للأدمن)</small>
+                    <small class="form-hint">ارفع صورة للبريد الجديد لتأكيد الملكية</small>
                 </div>
                 
                 <div class="warning-message">
@@ -167,7 +168,7 @@
                     </div>
                 </div>
                 
-                <button id="confirmCreateBtn" class="btn-danger">✅ إرسال الطلب مع الصورة</button>
+                <button id="confirmCreateBtn" class="btn-danger">✅ تم إنشاء الجميل</button>
             </div>
         </div>
     </div>
@@ -178,7 +179,7 @@
     <div id="withdrawModal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>💸 سحب الأموال</h3>
+                <h3>سحب الأموال</h3>
                 <button class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
@@ -280,4 +281,4 @@
 
     <script src="script.js"></script>
 </body>
-    </html>
+                            </html>
