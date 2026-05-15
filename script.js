@@ -1,5 +1,5 @@
 // ========================================
-// B Gmail - script.js (النسخة النهائية الكاملة)
+// B Gmail - script.js (مع رفع الصورة - الطريقة الصحيحة)
 // ========================================
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhqm0X3ZotU1CTxYyPDWgESbQPJuCvcs4MkGjgyPNXB4M7pUot_L1DsIk6bAF8lQHv/exec';
@@ -163,6 +163,41 @@ function cleanPhone(phone) {
 }
 
 // ========================================
+// رفع الصورة (الطريقة الصحيحة)
+// ========================================
+
+async function uploadImage(file, phone, gmail) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = async function() {
+            const base64data = reader.result.split(',')[1];
+            
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'uploadImage',
+                        phone: phone,
+                        gmail: gmail,
+                        imageData: base64data,
+                        fileName: file.name
+                    })
+                });
+                resolve({ success: true });
+            } catch (error) {
+                reject(error);
+            }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// ========================================
 // التحكم في الشاشات
 // ========================================
 
@@ -185,7 +220,7 @@ function showMainScreen() {
 }
 
 // ========================================
-// دوال API
+// دوال API للـ GET
 // ========================================
 
 async function callAPI(action, params = {}) {
@@ -415,7 +450,7 @@ function recordGmailCreation() {
 }
 
 // ========================================
-// إنشاء Gmail
+// إنشاء Gmail مع رفع الصورة
 // ========================================
 
 function displayGmailData(data) {
@@ -480,35 +515,53 @@ async function confirmGmailCreation() {
     });
     
     if (!confirmed.isConfirmed) {
-        showToast('تم إلغاء الطلب، يمكنك استئنافه لاحقاً', false);
+        saveGmailRequestPermanently(currentGeneratedData);
+        showToast('📦 تم حفظ طلب Gmail الخاص بك، يمكنك استئنافه لاحقاً', false);
+        document.getElementById('createModal').classList.add('hidden');
         return;
     }
     
     setButtonLoading('confirmCreateBtn', true);
     
-    // 1. رفع الصورة أولاً
     const file = fileInput.files[0];
-    const formData = new FormData();
-    formData.append('action', 'uploadImage');
-    formData.append('phone', cleanPhone(currentUser.phone));
-    formData.append('gmail', currentGeneratedData.gmail + '@gmail.com');
-    formData.append('imageBlob', file);
+    const fullGmail = currentGeneratedData.gmail + '@gmail.com';
     
     try {
-        const uploadResponse = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
-        const uploadResult = await uploadResponse.json();
+        // 1. رفع الصورة باستخدام Base64
+        const reader = new FileReader();
         
-        if (!uploadResult.success) {
-            showToast('فشل رفع الصورة، حاول مرة أخرى', true);
-            setButtonLoading('confirmCreateBtn', false);
-            return;
-        }
+        const uploadPromise = new Promise((resolve, reject) => {
+            reader.onloadend = async function() {
+                const base64data = reader.result.split(',')[1];
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            action: 'uploadImage',
+                            phone: cleanPhone(currentUser.phone),
+                            gmail: fullGmail,
+                            imageData: base64data,
+                            fileName: file.name
+                        })
+                    });
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+        
+        await uploadPromise;
         
         // 2. إرسال بيانات الجميل
         const result = await callAPI('submitGmail', {
             phone: cleanPhone(currentUser.phone),
             fullName: currentGeneratedData.name,
-            gmail: currentGeneratedData.gmail + '@gmail.com',
+            gmail: fullGmail,
             password: currentGeneratedData.password,
             price: gmailPrice
         });
@@ -522,11 +575,11 @@ async function confirmGmailCreation() {
             clearPermanentGmailRequest();
             Swal.fire({ icon: 'success', title: 'تم الإرسال!', text: 'سيتم مراجعة الجميل خلال 2-4 أيام', timer: 2000, showConfirmButton: false });
         } else {
-            showToast(result?.error || 'حدث خطأ', true);
+            showToast(result?.error || 'حدث خطأ في إرسال البيانات', true);
         }
     } catch (error) {
         setButtonLoading('confirmCreateBtn', false);
-        showToast('حدث خطأ في الاتصال', true);
+        showToast('حدث خطأ في رفع الصورة: ' + error.message, true);
     }
 }
 
@@ -597,7 +650,7 @@ async function showGmailLogs() {
         
         const tbody = document.getElementById('gmailLogsBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<td><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>';
+            tbody.innerHTML = '<tr><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>';
         } else {
             tbody.innerHTML = filtered.reverse().map(rec => {
                 let statusText = '', statusClass = '';
@@ -704,7 +757,7 @@ async function init() {
             if (modal && modal.id === 'createModal' && isRequestLocked && currentGeneratedData) {
                 Swal.fire({
                     title: '⚠️ طلب قيد الإنشاء',
-                    text: 'لا يمكنك إغلاق هذه النافذة قبل إكمال الطلب. يرجى الضغط على "إرسال الطلب مع الصورة" أو "إلغاء"',
+                    text: 'لا يمكنك إغلاق هذه النافذة قبل إكمال الطلب',
                     icon: 'warning',
                     confirmButtonText: 'حسناً'
                 });
