@@ -28,12 +28,27 @@ let isRequestLocked = false;
 const NAMES_LIST = [
     "James Smith", "Emma Johnson", "Michael Brown", "Olivia Williams", "David Jones",
     "Sophia Garcia", "Daniel Miller", "Isabella Davis", "Matthew Wilson", "Ava Anderson",
-    "Andrew Taylor", "Mia Thomas", "Joshua Moore", "Charlotte Martin", "Christopher Lee"
+    "Andrew Taylor", "Mia Thomas", "Joshua Moore", "Charlotte Martin", "Christopher Lee",
+    "Amelia Walker", "William Harris", "Ella Young", "Benjamin King", "Abigail Scott",
+    "Ryan Wright", "Harper Hill", "Alexander Green", "Evelyn Adams", "Jacob Nelson",
+    "Scarlett Carter", "Ethan Roberts", "Grace Mitchell", "Noah Evans", "Chloe Turner",
+    "Lucas Phillips", "Lily Campbell", "Jack Parker", "Aria Roberts", "Aiden Collins",
+    "Zoey Richardson", "Samuel Murphy", "Mila Sanders", "Henry Cook", "Stella Morris",
+    "Owen Reed", "Natalie Bailey", "Gabriel Bell", "Zoe Rivera", "Isaac Cooper",
+    "Hannah Ward", "Caleb Murphy", "Leah Peterson", "Elijah Baker", "Victoria Phillips"
 ];
 
 const GMAIL_PREFIXES = [
     "jamesmith", "emmajohnson", "michaelbrown", "oliviawilliams", "davidjones",
-    "sophiagarcia", "danielmiller", "isabelladavis", "matthewwilson", "avaanderson"
+    "sophiagarcia", "danielmiller", "isabelladavis", "matthewwilson", "avaanderson",
+    "andrewtaylor", "miathomas", "joshuamoore", "charlottemartin", "christopherlee",
+    "ameliawalker", "williamharris", "ellayoung", "benjaminking", "abigailscott",
+    "ryanwright", "harperhill", "alexandergreen", "evelynadams", "jacobnelson",
+    "scarlettcarter", "ethanroberts", "gracemitchell", "noahevans", "chloeturner",
+    "lucasphillips", "lilycampbell", "jackparker", "ariaroberts", "aidencollins",
+    "zoeyrichardson", "samuelmurphy", "milasanders", "henrycook", "stellamorris",
+    "owenreed", "nataliebailey", "gabrielbell", "zoerivera", "isaaccooper",
+    "hannahward", "calebmurphy", "leahpeterson", "elijahbaker", "victoriaphillips"
 ];
 
 const PASSWORDS_LIST = ["aass1122"];
@@ -490,49 +505,43 @@ async function confirmGmailCreation() {
     const file = fileInput.files[0];
     const fullGmail = currentGeneratedData.gmail + '@gmail.com';
     
-    const reader = new FileReader();
-    reader.onloadend = async function() {
-        const base64data = reader.result.split(',')[1];
-        
-        try {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({
-                    action: 'uploadImage',
-                    phone: cleanPhone(currentUser.phone),
-                    gmail: fullGmail,
-                    imageData: base64data,
-                    fileName: file.name
-                })
-            });
-            
-            const result = await callAPI('submitGmail', {
-                phone: cleanPhone(currentUser.phone),
-                fullName: currentGeneratedData.name,
-                gmail: fullGmail,
-                password: currentGeneratedData.password,
-                price: gmailPrice
-            });
-            
-            setButtonLoading('confirmCreateBtn', false);
-            
-            if (result?.success) {
-                recordGmailCreation();
-                await loadBalance();
-                document.getElementById('createModal').classList.add('hidden');
-                clearPermanentGmailRequest();
-                Swal.fire({ icon: 'success', title: 'تم الإرسال!', text: 'سيتم مراجعة الجميل خلال 2-4 أيام', timer: 2000, showConfirmButton: false });
-            } else {
-                showToast(result?.error || 'حدث خطأ في إرسال البيانات', true);
-            }
-        } catch (error) {
-            setButtonLoading('confirmCreateBtn', false);
-            showToast('حدث خطأ في رفع الصورة', true);
-        }
-    };
-    reader.readAsDataURL(file);
+    // 1. إرسال بيانات الجميل أولاً
+    const result = await callAPI('submitGmail', {
+        phone: cleanPhone(currentUser.phone),
+        fullName: currentGeneratedData.name,
+        gmail: fullGmail,
+        password: currentGeneratedData.password,
+        price: gmailPrice
+    });
+    
+    if (!result?.success) {
+        setButtonLoading('confirmCreateBtn', false);
+        showToast(result?.error || 'حدث خطأ', true);
+        return;
+    }
+    
+    // 2. رفع الصورة
+    const formData = new FormData();
+    formData.append('action', 'uploadImage');
+    formData.append('phone', cleanPhone(currentUser.phone));
+    formData.append('gmail', fullGmail);
+    formData.append('imageBlob', file);
+    
+    try {
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: formData
+        });
+    } catch (error) {
+        console.error('Upload error:', error);
+    }
+    
+    setButtonLoading('confirmCreateBtn', false);
+    recordGmailCreation();
+    await loadBalance();
+    document.getElementById('createModal').classList.add('hidden');
+    clearPermanentGmailRequest();
+    Swal.fire({ icon: 'success', title: 'تم الإرسال!', text: 'سيتم مراجعة الجميل خلال 2-4 أيام', timer: 2000, showConfirmButton: false });
 }
 
 // ========================================
@@ -602,7 +611,7 @@ async function showGmailLogs() {
         
         const tbody = document.getElementById('gmailLogsBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<td><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>';
+            tbody.innerHTML = '<tr><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>';
         } else {
             tbody.innerHTML = filtered.reverse().map(rec => {
                 let statusText = '', statusClass = '';
@@ -611,11 +620,11 @@ async function showGmailLogs() {
                     statusClass = 'status-pending'; 
                 }
                 else if (rec.status === 'Approved') { 
-                    statusText = '✅ مقبول - تمت الموافقة'; 
+                    statusText = '✅ مقبول'; 
                     statusClass = 'status-approved'; 
                 }
                 else if (rec.status === 'Rejected') { 
-                    statusText = '❌ مرفوض - غير مقبول'; 
+                    statusText = '❌ مرفوض'; 
                     statusClass = 'status-rejected'; 
                 }
                 const email = rec.gmail.replace('@gmail.com', '');
@@ -648,20 +657,20 @@ async function showWithdrawLogs() {
         
         const tbody = document.getElementById('withdrawLogsBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="no-data">📭 لا توجد سحوبات<\/td><\/tr>';
+            tbody.innerHTML = '<td><td colspan="6" class="no-data">📭 لا توجد سحوبات<\/td><\/tr>';
         } else {
             tbody.innerHTML = filtered.reverse().map(w => {
                 let statusText = '', statusClass = '';
                 if (w.status === 'Pending') { 
-                    statusText = '⏳ قيد المراجعة - جاري المعالجة'; 
+                    statusText = '⏳ قيد المراجعة'; 
                     statusClass = 'status-pending'; 
                 }
                 else if (w.status === 'Completed') { 
-                    statusText = '✅ مكتمل - تم السحب بنجاح'; 
+                    statusText = '✅ مكتمل'; 
                     statusClass = 'status-completed'; 
                 }
                 else if (w.status === 'Rejected') { 
-                    statusText = '❌ مرفوض - فشل السحب'; 
+                    statusText = '❌ مرفوض'; 
                     statusClass = 'status-rejected'; 
                 }
                 const date = new Date(w.timestamp).toLocaleDateString('ar-EG');
