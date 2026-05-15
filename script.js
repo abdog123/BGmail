@@ -1,10 +1,10 @@
 // ========================================
-// B Gmail - script.js (النسخة النهائية المصححة)
+// B Gmail - script.js (النسخة النهائية الكاملة)
 // ========================================
 
-const API_URL = "https://script.google.com/macros/s/AKfycbw7EXyeBagaReJjmaaRiZMnyThDz6hWLcHvK3qt3XgQbqbQ7xzVLByQLs6UzqYStcPu/exec";
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhqm0X3ZotU1CTxYyPDWgESbQPJuCvcs4MkGjgyPNXB4M7pUot_L1DsIk6bAF8lQHv/exec';
 
-let currentAccountNumber = null;
+let currentUser = null;
 let currentBalance = 0;
 let currentPendingBalance = 0;
 let currentBlocked = false;
@@ -17,7 +17,7 @@ let gmailCreationHistory = [];
 let usedGmailHistory = [];
 
 // ========================================
-// الأسماء والبيانات
+// الأسماء والبيانات المحلية
 // ========================================
 
 const NAMES_LIST = [
@@ -61,6 +61,10 @@ function generateUniqueGmail() {
             randomDigits = Math.floor(Math.random() * 90000) + 10000;
             gmail = prefix + randomDigits;
         }
+        if (attempts > 200) {
+            randomDigits = Math.floor(Math.random() * 900000) + 100000;
+            gmail = prefix + randomDigits;
+        }
     } while (usedGmailHistory.includes(gmail));
     usedGmailHistory.push(gmail);
     return gmail;
@@ -68,6 +72,16 @@ function generateUniqueGmail() {
 
 function getRandomBirthYear() {
     return Math.floor(Math.random() * (2000 - 1980 + 1)) + 1980;
+}
+
+function getRandomLocalData() {
+    return {
+        name: NAMES_LIST[Math.floor(Math.random() * NAMES_LIST.length)],
+        gmail: generateUniqueGmail(),
+        password: PASSWORDS_LIST[0],
+        gender: GENDERS[Math.floor(Math.random() * GENDERS.length)],
+        birthYear: getRandomBirthYear()
+    };
 }
 
 // ========================================
@@ -98,30 +112,6 @@ function setButtonLoading(buttonId, isLoading, loadingText = 'جاري...') {
     }
 }
 
-function getDeviceId() {
-    let deviceId = localStorage.getItem('deviceId');
-    if (!deviceId) {
-        deviceId = 'DEV_' + Math.random().toString(36).substr(2, 16) + '_' + Date.now();
-        localStorage.setItem('deviceId', deviceId);
-    }
-    return deviceId;
-}
-
-async function callAPI(action, params = {}) {
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action, ...params })
-        });
-        return await response.json();
-    } catch (error) {
-        console.error('API Error:', error);
-        return { success: false, error: error.message };
-    }
-}
-
 function copyToClipboard(text, fieldName) {
     navigator.clipboard.writeText(text).then(() => {
         showToast(`✅ تم نسخ ${fieldName}`, false);
@@ -130,96 +120,210 @@ function copyToClipboard(text, fieldName) {
     });
 }
 
+function togglePass(id) {
+    const input = document.getElementById(id);
+    if (input) {
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+}
+
+function cleanPhone(phone) {
+    let num = phone.toString().trim();
+    while (num.startsWith('0')) {
+        num = num.substring(1);
+    }
+    return num;
+}
+
 // ========================================
 // التحكم في الشاشات
 // ========================================
 
 function showRegisterScreen() {
-    const registerScreen = document.getElementById('registerScreen');
-    const mainScreen = document.getElementById('mainScreen');
-    if (registerScreen) registerScreen.classList.remove('hidden');
-    if (mainScreen) mainScreen.classList.add('hidden');
+    document.getElementById('registerScreen')?.classList.remove('hidden');
+    document.getElementById('loginScreen')?.classList.add('hidden');
+    document.getElementById('mainScreen')?.classList.add('hidden');
+}
+
+function showLoginScreen() {
+    document.getElementById('registerScreen')?.classList.add('hidden');
+    document.getElementById('loginScreen')?.classList.remove('hidden');
+    document.getElementById('mainScreen')?.classList.add('hidden');
 }
 
 function showMainScreen() {
-    const registerScreen = document.getElementById('registerScreen');
-    const mainScreen = document.getElementById('mainScreen');
-    if (registerScreen) registerScreen.classList.add('hidden');
-    if (mainScreen) mainScreen.classList.remove('hidden');
+    document.getElementById('registerScreen')?.classList.add('hidden');
+    document.getElementById('loginScreen')?.classList.add('hidden');
+    document.getElementById('mainScreen')?.classList.remove('hidden');
 }
 
 // ========================================
-// التسجيل والدخول
+// دوال API
 // ========================================
 
-async function registerDevice() {
-    const deviceId = getDeviceId();
-    const savedAccount = localStorage.getItem('accountNumber');
-    
-    // لو فيه حساب موجود بالفعل، ندخل بيه
-    if (savedAccount) {
-        currentAccountNumber = savedAccount;
-        const result = await callAPI('getBalance', { accountNumber: savedAccount });
+async function callAPI(action, params = {}) {
+    try {
+        const url = new URL(SCRIPT_URL);
+        url.searchParams.append('action', action);
+        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
         
-        if (result && result.success === true) {
-            currentBalance = parseFloat(result.balance) || 0;
-            currentPendingBalance = parseFloat(result.pendingBalance) || 0;
-            currentBlocked = result.blocked === true;
-            
-            document.getElementById('balance').textContent = currentBalance;
-            document.getElementById('pendingBalance').textContent = currentPendingBalance;
-            
-            if (currentBlocked) {
-                showToast('⚠️ حسابك محظور!', true);
-                return false;
-            }
-            
-            await loadServicePrice();
-            showMainScreen();
-            startBalanceUpdates();
-            showToast('تم تسجيل الدخول بنجاح!');
-            return true;
-        } else {
-            localStorage.removeItem('accountNumber');
-        }
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+            mode: 'cors'
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('API Error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// ========================================
+// التسجيل
+// ========================================
+
+async function register() {
+    const phone = document.getElementById('regPhone')?.value.trim();
+    const name = document.getElementById('regName')?.value.trim();
+    const password = document.getElementById('regPassword')?.value;
+    const confirmPassword = document.getElementById('regConfirmPassword')?.value;
+    
+    if (!phone) {
+        showToast('الرجاء إدخال رقم الهاتف', true);
+        return;
+    }
+    if (phone.length < 10) {
+        showToast('رقم الهاتف غير صحيح', true);
+        return;
+    }
+    if (!name) {
+        showToast('الرجاء إدخال الاسم الكامل', true);
+        return;
+    }
+    if (!password) {
+        showToast('الرجاء إدخال كلمة المرور', true);
+        return;
+    }
+    if (password.length < 4) {
+        showToast('كلمة المرور يجب أن تكون 4 أحرف على الأقل', true);
+        return;
+    }
+    if (password !== confirmPassword) {
+        showToast('كلمة المرور غير متطابقة', true);
+        return;
     }
     
-    // تسجيل جديد
     setButtonLoading('registerBtn', true);
-    const accountNumber = 'ACC' + Math.floor(Math.random() * 100000) + Date.now().toString().slice(-6);
-    const result = await callAPI('register', { accountNumber, deviceId });
+    const result = await callAPI('signup', { name, phone: cleanPhone(phone), pass: password });
     setButtonLoading('registerBtn', false);
     
-    if (result && result.success === true) {
-        localStorage.setItem('accountNumber', accountNumber);
-        localStorage.setItem('deviceId', deviceId);
-        currentAccountNumber = accountNumber;
-        currentBlocked = false;
-        currentBalance = 0;
-        currentPendingBalance = 0;
+    if (result && result.result === "success") {
+        Swal.fire({
+            icon: 'success',
+            title: 'تم التسجيل بنجاح!',
+            text: 'يمكنك الآن تسجيل الدخول إلى حسابك',
+            timer: 2000,
+            showConfirmButton: false
+        });
+        showLoginScreen();
+    } else if (result?.result === "exists") {
+        Swal.fire('تنبيه', 'هذا الرقم مسجل مسبقاً. يرجى تسجيل الدخول', 'info');
+        showLoginScreen();
+    } else {
+        showToast(result?.error || 'فشل التسجيل', true);
+    }
+}
+
+// ========================================
+// تسجيل الدخول
+// ========================================
+
+async function login() {
+    const phone = document.getElementById('loginPhone')?.value.trim();
+    const password = document.getElementById('loginPassword')?.value;
+    
+    if (!phone || !password) {
+        showToast('الرجاء إدخال رقم الهاتف وكلمة المرور', true);
+        return false;
+    }
+    
+    setButtonLoading('doLoginBtn', true);
+    const result = await callAPI('login', { phone: cleanPhone(phone), pass: password });
+    setButtonLoading('doLoginBtn', false);
+    
+    if (result && result.result === "found") {
+        localStorage.setItem('userPhone', result.phone);
+        localStorage.setItem('userPassword', password);
+        localStorage.setItem('userName', result.name);
+        currentUser = { phone: result.phone, name: result.name };
+        currentBalance = parseFloat(result.balance) || 0;
+        currentPendingBalance = parseFloat(result.pendingBalance) || 0;
+        currentBlocked = result.blocked === "TRUE";
         
-        document.getElementById('balance').textContent = '0';
-        document.getElementById('pendingBalance').textContent = '0';
+        document.getElementById('balance').textContent = currentBalance;
+        document.getElementById('pendingBalance').textContent = currentPendingBalance;
         
-        showToast('✅ تم تسجيل الجهاز بنجاح!');
+        if (currentBlocked) {
+            Swal.fire('محظور', 'حسابك محظور. يرجى التواصل مع الدعم', 'error');
+            return false;
+        }
+        
         await loadServicePrice();
         showMainScreen();
         startBalanceUpdates();
+        Swal.fire({
+            icon: 'success',
+            title: `أهلاً بك ${result.name}`,
+            text: 'تم تسجيل الدخول بنجاح',
+            timer: 1500,
+            showConfirmButton: false
+        });
         return true;
+    } else if (result?.result === "wrong_pass") {
+        Swal.fire('خطأ', 'كلمة المرور غير صحيحة', 'error');
+        return false;
     } else {
-        showToast(result?.error || 'فشل التسجيل', true);
+        Swal.fire('غير موجود', 'هذا الرقم غير مسجل. يرجى إنشاء حساب جديد', 'warning');
+        showRegisterScreen();
         return false;
     }
 }
 
 // ========================================
-// الرصيد والأسعار
+// تسجيل الخروج
+// ========================================
+
+function logout() {
+    Swal.fire({
+        title: 'تسجيل الخروج',
+        text: 'هل أنت متأكد من تسجيل الخروج؟',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'نعم',
+        cancelButtonText: 'إلغاء'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            stopBalanceUpdates();
+            localStorage.removeItem('userPhone');
+            localStorage.removeItem('userPassword');
+            localStorage.removeItem('userName');
+            currentUser = null;
+            currentBalance = 0;
+            currentPendingBalance = 0;
+            showLoginScreen();
+            showToast('👋 تم تسجيل الخروج بنجاح', false);
+        }
+    });
+}
+
+// ========================================
+// جلب الرصيد والأسعار
 // ========================================
 
 async function loadBalance() {
-    if (!currentAccountNumber) return;
+    if (!currentUser) return;
     
-    const result = await callAPI('getBalance', { accountNumber: currentAccountNumber });
+    const result = await callAPI('getBalance', { phone: cleanPhone(currentUser.phone) });
     
     if (result && result.success === true) {
         const oldBalance = currentBalance;
@@ -227,13 +331,13 @@ async function loadBalance() {
         
         currentBalance = parseFloat(result.balance) || 0;
         currentPendingBalance = parseFloat(result.pendingBalance) || 0;
-        currentBlocked = result.blocked === true;
+        currentBlocked = result.blocked === "TRUE";
         
         document.getElementById('balance').textContent = currentBalance;
         document.getElementById('pendingBalance').textContent = currentPendingBalance;
         
         if (oldBalance !== currentBalance && currentBalance > oldBalance) {
-            showToast(`💰 تم إضافة ${(currentBalance - oldBalance).toFixed(2)} ج.م`, false);
+            showToast(`💰 تم إضافة ${(currentBalance - oldBalance).toFixed(2)} ج.م إلى رصيدك`, false);
         }
         
         if (currentBlocked) {
@@ -245,8 +349,6 @@ async function loadBalance() {
 }
 
 async function loadServicePrice() {
-    if (!currentAccountNumber) return;
-    
     const result = await callAPI('getServicePrice', { service: 'Gmail' });
     if (result && result.success === true) {
         gmailPrice = parseFloat(result.price) || 8;
@@ -260,11 +362,15 @@ async function loadServicePrice() {
 function startBalanceUpdates() {
     if (balanceUpdateInterval) clearInterval(balanceUpdateInterval);
     balanceUpdateInterval = setInterval(() => {
-        if (currentAccountNumber && !currentBlocked) {
+        if (currentUser && !currentBlocked) {
             loadBalance();
             loadServicePrice();
         }
-    }, 2000);
+    }, 3000);
+}
+
+function stopBalanceUpdates() {
+    if (balanceUpdateInterval) clearInterval(balanceUpdateInterval);
 }
 
 function disableAllButtons() {
@@ -288,12 +394,10 @@ function enableAllButtons() {
 // ========================================
 
 function checkTempBlock() {
-    if (currentBlocked) {
-        return { blocked: true, reason: "حسابك محظور نهائياً" };
-    }
+    if (currentBlocked) return { blocked: true, reason: "حسابك محظور نهائياً" };
     if (tempBlockUntil && new Date() < tempBlockUntil) {
         const remaining = Math.ceil((tempBlockUntil - new Date()) / 60000);
-        return { blocked: true, reason: `⚠️ ممنوع لمدة ${remaining} دقيقة` };
+        return { blocked: true, reason: `⚠️ تم حظرك مؤقتاً لمدة ${remaining} دقيقة بسبب إنشاء جميلات كثيرة` };
     }
     if (tempBlockUntil && new Date() >= tempBlockUntil) {
         tempBlockUntil = null;
@@ -310,7 +414,7 @@ function recordGmailCreation() {
     
     if (gmailCreationHistory.length > 3) {
         tempBlockUntil = new Date(now.getTime() + 3600000);
-        showToast(`⚠️ تم حظرك مؤقتاً لمدة ساعة`, true);
+        showToast(`⚠️ تم حظرك مؤقتاً لمدة ساعة بسبب إنشاء جميلات كثيرة!`, true);
         return false;
     }
     return true;
@@ -319,16 +423,6 @@ function recordGmailCreation() {
 // ========================================
 // إنشاء Gmail
 // ========================================
-
-function getRandomLocalData() {
-    return {
-        name: NAMES_LIST[Math.floor(Math.random() * NAMES_LIST.length)],
-        gmail: generateUniqueGmail(),
-        password: PASSWORDS_LIST[0],
-        gender: GENDERS[Math.floor(Math.random() * GENDERS.length)],
-        birthYear: getRandomBirthYear()
-    };
-}
 
 let currentGeneratedData = null;
 
@@ -339,7 +433,7 @@ async function showCreateGmailModal() {
         return;
     }
     if (currentBlocked) {
-        showToast('❌ حسابك محظور!', true);
+        showToast('❌ حسابك محظور نهائياً!', true);
         return;
     }
     
@@ -364,12 +458,20 @@ async function confirmGmailCreation() {
         return;
     }
     
-    const confirmed = confirm('⚠️ هل أنت متأكد؟\n\nفي حالة التلاعب سيتم حظر حسابك نهائياً!');
-    if (!confirmed) return;
+    const confirmed = await Swal.fire({
+        title: 'تأكيد إنشاء الجميل',
+        html: '⚠️ <strong>تحذير هام!</strong><br><br>هل قمت بإنشاء حساب Gmail بنفس البيانات الموضحة أعلاه؟<br><br>في حالة التلاعب أو إرسال بيانات غير صحيحة،<br>سيتم <strong>رفض الحساب وحظر حسابك نهائياً</strong>',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '✅ نعم، تم الإنشاء',
+        cancelButtonText: '❌ إلغاء'
+    });
     
-    setButtonLoading('confirmCreateBtn', true);
+    if (!confirmed.isConfirmed) return;
+    
+    setButtonLoading('confirmCreateBtn', true, 'جاري الإرسال...');
     const result = await callAPI('submitGmail', {
-        accountNumber: currentAccountNumber,
+        phone: cleanPhone(currentUser.phone),
         fullName: currentGeneratedData.name,
         gmail: currentGeneratedData.gmail + '@gmail.com',
         password: currentGeneratedData.password,
@@ -382,9 +484,15 @@ async function confirmGmailCreation() {
         await loadBalance();
         document.getElementById('createModal').classList.add('hidden');
         currentGeneratedData = null;
-        showToast('✅ تم الإرسال! سيتم المراجعة خلال 2-4 أيام');
+        Swal.fire({
+            icon: 'success',
+            title: 'تم الإرسال!',
+            text: 'سيتم مراجعة الجميل خلال 2-4 أيام',
+            timer: 2000,
+            showConfirmButton: false
+        });
     } else {
-        showToast(result?.error || 'حدث خطأ', true);
+        showToast(result?.error || 'حدث خطأ أثناء الإرسال', true);
     }
 }
 
@@ -394,7 +502,7 @@ async function confirmGmailCreation() {
 
 function showWithdrawModal() {
     if (currentBlocked) {
-        showToast('❌ حسابك محظور!', true);
+        showToast('❌ حسابك محظور! لا يمكنك سحب الأموال', true);
         return;
     }
     document.getElementById('availableBalanceHint').textContent = currentBalance;
@@ -404,14 +512,44 @@ function showWithdrawModal() {
 async function submitWithdrawRequest() {
     const wallet = document.getElementById('walletNumber')?.value.trim();
     const amount = parseFloat(document.getElementById('withdrawAmount')?.value || 0);
+    const fee = 5;
+    const totalDeduction = amount + fee;
     
-    if (!wallet) { showToast('أدخل رقم المحفظة', true); return; }
-    if (isNaN(amount) || amount <= 0) { showToast('أدخل مبلغ صحيح', true); return; }
-    if (amount > currentBalance) { showToast('المبلغ أكبر من الرصيد', true); return; }
-    if (amount < 30) { showToast('الحد الأدنى 30 جنيه', true); return; }
+    if (!wallet) {
+        showToast('الرجاء إدخال رقم المحفظة', true);
+        return;
+    }
+    if (isNaN(amount) || amount <= 0) {
+        showToast('الرجاء إدخال مبلغ صحيح', true);
+        return;
+    }
+    if (amount < 30) {
+        showToast('الحد الأدنى للسحب هو 30 جنيه', true);
+        return;
+    }
+    if (totalDeduction > currentBalance) {
+        showToast(`الرصيد غير كافٍ. المطلوب: ${totalDeduction} ج.م (${amount} + ${fee} مصاريف)`, true);
+        return;
+    }
+    
+    const confirmWithdraw = await Swal.fire({
+        title: 'تأكيد سحب الأموال',
+        html: `المبلغ المطلوب: ${amount} ج.م<br>مصاريف السحب: ${fee} ج.م<br><strong>الصافي المستلم: ${amount} ج.م</strong><br><br>سيتم خصم ${totalDeduction} ج.م من رصيدك`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '✅ تأكيد السحب',
+        cancelButtonText: '❌ إلغاء'
+    });
+    
+    if (!confirmWithdraw.isConfirmed) return;
     
     setButtonLoading('submitWithdrawBtn', true);
-    const result = await callAPI('submitWithdrawal', { accountNumber: currentAccountNumber, wallet, amount });
+    const result = await callAPI('submitWithdrawal', {
+        phone: cleanPhone(currentUser.phone),
+        wallet: wallet,
+        amount: amount,
+        fee: fee
+    });
     setButtonLoading('submitWithdrawBtn', false);
     
     if (result && result.success === true) {
@@ -419,30 +557,39 @@ async function submitWithdrawRequest() {
         document.getElementById('withdrawModal').classList.add('hidden');
         document.getElementById('walletNumber').value = '';
         document.getElementById('withdrawAmount').value = '';
-        showToast('✅ تم إرسال طلب السحب');
+        Swal.fire({
+            icon: 'success',
+            title: 'تم إرسال طلب السحب',
+            text: `تم خصم ${result.deducted || totalDeduction} ج.م من رصيدك. سيتم المراجعة خلال 2-4 أيام`,
+            timer: 2500,
+            showConfirmButton: false
+        });
     } else {
-        showToast(result?.error || 'حدث خطأ', true);
+        showToast(result?.error || 'حدث خطأ أثناء إرسال طلب السحب', true);
     }
 }
 
 // ========================================
-// السجلات
+// عرض السجلات
 // ========================================
 
 async function showGmailLogs() {
-    if (!currentAccountNumber) return;
+    if (!currentUser) return;
+    
     setButtonLoading('gmailLogsBtn', true);
-    const result = await callAPI('getMyGmails', { accountNumber: currentAccountNumber });
+    const result = await callAPI('getMyGmails', { phone: cleanPhone(currentUser.phone) });
     setButtonLoading('gmailLogsBtn', false);
     
     if (result?.success && result.gmails) {
         const filter = document.getElementById('gmailStatusFilter')?.value || 'all';
         let filtered = result.gmails;
-        if (filter !== 'all') filtered = result.gmails.filter(g => g.status === filter);
+        if (filter !== 'all') {
+            filtered = result.gmails.filter(g => g.status === filter);
+        }
         
         const tbody = document.getElementById('gmailLogsBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3">لا توجد جميلات</td><tr>';
+            tbody.innerHTML = '<tr><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>';
         } else {
             tbody.innerHTML = filtered.reverse().map(rec => {
                 let statusText = '', statusClass = '';
@@ -451,29 +598,32 @@ async function showGmailLogs() {
                 else if (rec.status === 'Rejected') { statusText = '❌ مرفوض'; statusClass = 'status-rejected'; }
                 const email = rec.gmail.replace('@gmail.com', '');
                 const date = new Date(rec.timestamp).toLocaleDateString('ar-EG');
-                return `<tr><td style="direction:ltr">${email}</td><td><span class="status-badge ${statusClass}">${statusText}</span></td><td>${date}</td></tr>`;
+                return `<tr><td style="direction:ltr">${email}<\/td><td><span class="status-badge ${statusClass}">${statusText}<\/span><\/td><td>${date}<\/td><\/tr>`;
             }).join('');
         }
         document.getElementById('gmailLogsModal').classList.remove('hidden');
     } else {
-        showToast('خطأ في التحميل', true);
+        showToast('حدث خطأ في تحميل السجلات', true);
     }
 }
 
 async function showWithdrawLogs() {
-    if (!currentAccountNumber) return;
+    if (!currentUser) return;
+    
     setButtonLoading('withdrawLogsBtn', true);
-    const result = await callAPI('getMyWithdrawals', { accountNumber: currentAccountNumber });
+    const result = await callAPI('getMyWithdrawals', { phone: cleanPhone(currentUser.phone) });
     setButtonLoading('withdrawLogsBtn', false);
     
     if (result?.success && result.withdrawals) {
         const filter = document.getElementById('withdrawStatusFilter')?.value || 'all';
         let filtered = result.withdrawals;
-        if (filter !== 'all') filtered = result.withdrawals.filter(w => w.status === filter);
+        if (filter !== 'all') {
+            filtered = result.withdrawals.filter(w => w.status === filter);
+        }
         
         const tbody = document.getElementById('withdrawLogsBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4">لا توجد سحوبات</td><tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="no-data">📭 لا توجد سحوبات<\/td><\/tr>';
         } else {
             tbody.innerHTML = filtered.reverse().map(w => {
                 let statusText = '', statusClass = '';
@@ -481,12 +631,13 @@ async function showWithdrawLogs() {
                 else if (w.status === 'Completed') { statusText = '✅ مكتمل'; statusClass = 'status-completed'; }
                 else if (w.status === 'Rejected') { statusText = '❌ مرفوض'; statusClass = 'status-rejected'; }
                 const date = new Date(w.timestamp).toLocaleDateString('ar-EG');
-                return `<tr><td>${w.wallet}</td><td>${w.amount} ج.م</td><td><span class="status-badge ${statusClass}">${statusText}</span></td><td>${date}</td></tr>`;
+                const netAmount = w.amount - (w.fee || 5);
+                return `<tr><td>${w.wallet}<\/td><td>${w.amount} ج.م<\/td><td>${w.fee || 5} ج.م<\/td><td>${netAmount} ج.م<\/td><td><span class="status-badge ${statusClass}">${statusText}<\/span><\/td><td>${date}<\/td><\/tr>`;
             }).join('');
         }
         document.getElementById('withdrawLogsModal').classList.remove('hidden');
     } else {
-        showToast('خطأ في التحميل', true);
+        showToast('حدث خطأ في تحميل السجلات', true);
     }
 }
 
@@ -495,20 +646,12 @@ async function showWithdrawLogs() {
 // ========================================
 
 async function init() {
-    const savedAccount = localStorage.getItem('accountNumber');
-    
-    if (savedAccount) {
-        currentAccountNumber = savedAccount;
-        await loadBalance();
-        await loadServicePrice();
-        showMainScreen();
-        startBalanceUpdates();
-    } else {
-        showRegisterScreen();
-    }
-    
     // ربط الأزرار
-    document.getElementById('registerBtn')?.addEventListener('click', registerDevice);
+    document.getElementById('registerBtn')?.addEventListener('click', register);
+    document.getElementById('showLoginBtn')?.addEventListener('click', showLoginScreen);
+    document.getElementById('doLoginBtn')?.addEventListener('click', login);
+    document.getElementById('showRegisterBtn')?.addEventListener('click', showRegisterScreen);
+    document.getElementById('logoutBtn')?.addEventListener('click', logout);
     document.getElementById('createGmailBtn')?.addEventListener('click', showCreateGmailModal);
     document.getElementById('confirmCreateBtn')?.addEventListener('click', confirmGmailCreation);
     document.getElementById('withdrawBtn')?.addEventListener('click', showWithdrawModal);
@@ -516,17 +659,55 @@ async function init() {
     document.getElementById('gmailLogsBtn')?.addEventListener('click', showGmailLogs);
     document.getElementById('withdrawLogsBtn')?.addEventListener('click', showWithdrawLogs);
     
-    window.copyToClipboard = copyToClipboard;
-    
+    // إغلاق النوافذ المنبثقة
     document.querySelectorAll('.close-modal').forEach(btn => {
-        btn.addEventListener('click', (e) => e.target.closest('.modal')?.classList.add('hidden'));
-    });
-    window.addEventListener('click', (e) => {
-        if (e.target.classList?.contains('modal')) e.target.classList.add('hidden');
+        btn.addEventListener('click', (e) => {
+            e.target.closest('.modal')?.classList.add('hidden');
+        });
     });
     
+    window.addEventListener('click', (e) => {
+        if (e.target.classList?.contains('modal')) {
+            e.target.classList.add('hidden');
+        }
+    });
+    
+    // فلترة السجلات
     document.getElementById('gmailStatusFilter')?.addEventListener('change', showGmailLogs);
     document.getElementById('withdrawStatusFilter')?.addEventListener('change', showWithdrawLogs);
+    
+    // التحقق من وجود جلسة نشطة
+    window.copyToClipboard = copyToClipboard;
+    window.togglePass = togglePass;
+    
+    const savedPhone = localStorage.getItem('userPhone');
+    const savedPassword = localStorage.getItem('userPassword');
+    
+    if (savedPhone && savedPassword) {
+        currentUser = { phone: savedPhone };
+        const result = await callAPI('login', { phone: cleanPhone(savedPhone), pass: savedPassword });
+        if (result && result.result === "found") {
+            currentUser = { phone: result.phone, name: result.name };
+            currentBalance = parseFloat(result.balance) || 0;
+            currentPendingBalance = parseFloat(result.pendingBalance) || 0;
+            currentBlocked = result.blocked === "TRUE";
+            
+            document.getElementById('balance').textContent = currentBalance;
+            document.getElementById('pendingBalance').textContent = currentPendingBalance;
+            
+            if (!currentBlocked) {
+                await loadServicePrice();
+                showMainScreen();
+                startBalanceUpdates();
+            } else {
+                showLoginScreen();
+            }
+        } else {
+            showLoginScreen();
+        }
+    } else {
+        showRegisterScreen();
+    }
 }
 
 window.addEventListener('DOMContentLoaded', init);
