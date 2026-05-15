@@ -1,5 +1,5 @@
 // ========================================
-// B Gmail - script.js (النسخة النهائية مع منع الخروج من الطلب)
+// B Gmail - script.js (النسخة النهائية الكاملة)
 // ========================================
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhqm0X3ZotU1CTxYyPDWgESbQPJuCvcs4MkGjgyPNXB4M7pUot_L1DsIk6bAF8lQHv/exec';
@@ -8,6 +8,7 @@ let currentUser = null;
 let currentBalance = 0;
 let currentPendingBalance = 0;
 let currentBlocked = false;
+let currentStatusText = "نشط";
 let gmailPrice = 0;
 let balanceUpdateInterval = null;
 
@@ -18,7 +19,7 @@ let usedGmailHistory = [];
 
 // حفظ بيانات إنشاء الجميل بشكل دائم
 let currentGeneratedData = null;
-let isRequestLocked = false; // قفل لمنع إنشاء طلب جديد قبل إنهاء الحالي
+let isRequestLocked = false;
 
 // ========================================
 // الأسماء والبيانات المحلية
@@ -259,6 +260,7 @@ async function login() {
         currentBalance = parseFloat(result.balance) || 0;
         currentPendingBalance = parseFloat(result.pendingBalance) || 0;
         currentBlocked = result.blocked === "TRUE";
+        currentStatusText = result.statusText || "نشط";
         
         document.getElementById('balance').textContent = currentBalance;
         document.getElementById('pendingBalance').textContent = currentPendingBalance;
@@ -272,27 +274,27 @@ async function login() {
         showMainScreen();
         startBalanceUpdates();
         
-        // التحقق من وجود طلب محفوظ
         const savedRequest = loadPermanentGmailRequest();
         if (savedRequest && !currentGeneratedData && isRequestLocked) {
-            Swal.fire({
-                title: '📦 لديك طلب Gmail غير مكتمل',
-                text: 'هل تريد استئناف إنشاء الجميل السابق؟',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: '✅ نعم، استئناف',
-                cancelButtonText: '❌ لا، إنشاء جديد',
-                allowOutsideClick: false
-            }).then((res) => {
-                if (res.isConfirmed) {
-                    currentGeneratedData = savedRequest;
-                    displayGmailData(currentGeneratedData);
-                    document.getElementById('createModal').classList.remove('hidden');
-                } else {
-                    clearPermanentGmailRequest();
-                    showToast('يمكنك الآن إنشاء طلب جديد', false);
-                }
-            });
+            setTimeout(() => {
+                Swal.fire({
+                    title: '📦 لديك طلب Gmail غير مكتمل',
+                    text: 'هل تريد استئناف إنشاء الجميل السابق؟',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '✅ نعم',
+                    cancelButtonText: '❌ لا',
+                    allowOutsideClick: false
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        currentGeneratedData = savedRequest;
+                        displayGmailData(currentGeneratedData);
+                        document.getElementById('createModal').classList.remove('hidden');
+                    } else {
+                        clearPermanentGmailRequest();
+                    }
+                });
+            }, 500);
         }
         
         Swal.fire({ icon: 'success', title: `أهلاً بك ${result.name}`, timer: 1500, showConfirmButton: false });
@@ -341,6 +343,7 @@ async function loadBalance() {
         currentBalance = parseFloat(result.balance) || 0;
         currentPendingBalance = parseFloat(result.pendingBalance) || 0;
         currentBlocked = result.blocked === "TRUE";
+        currentStatusText = result.statusText || "نشط";
         document.getElementById('balance').textContent = currentBalance;
         document.getElementById('pendingBalance').textContent = currentPendingBalance;
         currentBlocked ? disableAllButtons() : enableAllButtons();
@@ -412,7 +415,7 @@ function recordGmailCreation() {
 }
 
 // ========================================
-// إنشاء Gmail مع منع الخروج
+// إنشاء Gmail
 // ========================================
 
 function displayGmailData(data) {
@@ -423,7 +426,6 @@ function displayGmailData(data) {
 }
 
 async function showCreateGmailModal() {
-    // منع إنشاء طلب جديد إذا كان فيه طلب معلق
     if (isRequestLocked && currentGeneratedData) {
         Swal.fire({
             title: '⚠️ لديك طلب قيد الإنشاء',
@@ -431,7 +433,6 @@ async function showCreateGmailModal() {
             icon: 'warning',
             confirmButtonText: 'حسناً'
         });
-        // عرض الطلب الحالي
         if (currentGeneratedData) {
             displayGmailData(currentGeneratedData);
             document.getElementById('createModal').classList.remove('hidden');
@@ -462,9 +463,16 @@ async function showCreateGmailModal() {
 async function confirmGmailCreation() {
     if (!currentGeneratedData) return;
     
+    // التحقق من رفع الصورة
+    const fileInput = document.getElementById('gmailScreenshot');
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        showToast('❌ يرجى رفع صورة سكرين شوت لحساب Gmail الجديد', true);
+        return;
+    }
+    
     const confirmed = await Swal.fire({
         title: 'تأكيد إنشاء الجميل',
-        html: '⚠️ <strong>تحذير هام!</strong><br><br>هل قمت بإنشاء حساب Gmail بنفس البيانات الموضحة أعلاه؟<br><br>بعد التأكيد، سيتم إرسال الطلب للمراجعة',
+        html: '⚠️ <strong>تحذير هام!</strong><br><br>هل قمت بإنشاء حساب Gmail بنفس البيانات الموضحة أعلاه؟<br><br>بعد التأكيد، سيتم إرسال الطلب مع الصورة للمراجعة',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: '✅ نعم، تم الإنشاء',
@@ -477,23 +485,48 @@ async function confirmGmailCreation() {
     }
     
     setButtonLoading('confirmCreateBtn', true);
-    const result = await callAPI('submitGmail', {
-        phone: cleanPhone(currentUser.phone),
-        fullName: currentGeneratedData.name,
-        gmail: currentGeneratedData.gmail + '@gmail.com',
-        password: currentGeneratedData.password,
-        price: gmailPrice
-    });
-    setButtonLoading('confirmCreateBtn', false);
     
-    if (result?.success) {
-        recordGmailCreation();
-        await loadBalance();
-        document.getElementById('createModal').classList.add('hidden');
-        clearPermanentGmailRequest();
-        Swal.fire({ icon: 'success', title: 'تم الإرسال!', text: 'سيتم مراجعة الجميل خلال 2-4 أيام', timer: 2000, showConfirmButton: false });
-    } else {
-        showToast(result?.error || 'حدث خطأ', true);
+    // 1. رفع الصورة أولاً
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append('action', 'uploadImage');
+    formData.append('phone', cleanPhone(currentUser.phone));
+    formData.append('gmail', currentGeneratedData.gmail + '@gmail.com');
+    formData.append('imageBlob', file);
+    
+    try {
+        const uploadResponse = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
+        const uploadResult = await uploadResponse.json();
+        
+        if (!uploadResult.success) {
+            showToast('فشل رفع الصورة، حاول مرة أخرى', true);
+            setButtonLoading('confirmCreateBtn', false);
+            return;
+        }
+        
+        // 2. إرسال بيانات الجميل
+        const result = await callAPI('submitGmail', {
+            phone: cleanPhone(currentUser.phone),
+            fullName: currentGeneratedData.name,
+            gmail: currentGeneratedData.gmail + '@gmail.com',
+            password: currentGeneratedData.password,
+            price: gmailPrice
+        });
+        
+        setButtonLoading('confirmCreateBtn', false);
+        
+        if (result?.success) {
+            recordGmailCreation();
+            await loadBalance();
+            document.getElementById('createModal').classList.add('hidden');
+            clearPermanentGmailRequest();
+            Swal.fire({ icon: 'success', title: 'تم الإرسال!', text: 'سيتم مراجعة الجميل خلال 2-4 أيام', timer: 2000, showConfirmButton: false });
+        } else {
+            showToast(result?.error || 'حدث خطأ', true);
+        }
+    } catch (error) {
+        setButtonLoading('confirmCreateBtn', false);
+        showToast('حدث خطأ في الاتصال', true);
     }
 }
 
@@ -564,16 +597,31 @@ async function showGmailLogs() {
         
         const tbody = document.getElementById('gmailLogsBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" class="no-data">📭 لا توجد جميلات</td></tr>';
+            tbody.innerHTML = '<td><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>';
         } else {
             tbody.innerHTML = filtered.reverse().map(rec => {
                 let statusText = '', statusClass = '';
-                if (rec.status === 'Pending') { statusText = '⏳ قيد المراجعة'; statusClass = 'status-pending'; }
-                else if (rec.status === 'Approved') { statusText = '✅ مقبول'; statusClass = 'status-approved'; }
-                else if (rec.status === 'Rejected') { statusText = '❌ مرفوض'; statusClass = 'status-rejected'; }
+                if (rec.status === 'Pending') { 
+                    statusText = '⏳ قيد المراجعة'; 
+                    statusClass = 'status-pending'; 
+                }
+                else if (rec.status === 'Approved') { 
+                    statusText = '✅ مقبول - تمت الموافقة'; 
+                    statusClass = 'status-approved'; 
+                }
+                else if (rec.status === 'Rejected') { 
+                    statusText = '❌ مرفوض - غير مقبول'; 
+                    statusClass = 'status-rejected'; 
+                }
                 const email = rec.gmail.replace('@gmail.com', '');
                 const date = new Date(rec.timestamp).toLocaleDateString('ar-EG');
-                return `<tr><td style="direction:ltr">${email}</td><td><span class="status-badge ${statusClass}">${statusText}</span></td><td>${date}</td></tr>`;
+                return `
+                    <tr>
+                        <td style="direction:ltr">${email}@gmail.com<\/td>
+                        <td><span class="status-badge ${statusClass}">${statusText}<\/span><\/td>
+                        <td>${date}<\/td>
+                    <\/tr>
+                `;
             }).join('');
         }
         document.getElementById('gmailLogsModal').classList.remove('hidden');
@@ -595,23 +643,34 @@ async function showWithdrawLogs() {
         
         const tbody = document.getElementById('withdrawLogsBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="no-data">📭 لا توجد سحوبات</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="no-data">📭 لا توجد سحوبات<\/td><\/tr>';
         } else {
             tbody.innerHTML = filtered.reverse().map(w => {
                 let statusText = '', statusClass = '';
-                if (w.status === 'Pending') { statusText = '⏳ قيد المراجعة'; statusClass = 'status-pending'; }
-                else if (w.status === 'Completed') { statusText = '✅ مكتمل'; statusClass = 'status-completed'; }
-                else if (w.status === 'Rejected') { statusText = '❌ مرفوض'; statusClass = 'status-rejected'; }
+                if (w.status === 'Pending') { 
+                    statusText = '⏳ قيد المراجعة - جاري المعالجة'; 
+                    statusClass = 'status-pending'; 
+                }
+                else if (w.status === 'Completed') { 
+                    statusText = '✅ مكتمل - تم السحب بنجاح'; 
+                    statusClass = 'status-completed'; 
+                }
+                else if (w.status === 'Rejected') { 
+                    statusText = '❌ مرفوض - فشل السحب'; 
+                    statusClass = 'status-rejected'; 
+                }
                 const date = new Date(w.timestamp).toLocaleDateString('ar-EG');
                 const netAmount = w.amount - (w.fee || 5);
-                return `<tr>
-                    <td>${w.wallet}</td>
-                    <td>${w.amount} ج.م</td>
-                    <td>${w.fee || 5} ج.م</td>
-                    <td>${netAmount} ج.م</td>
-                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                    <td>${date}</td>
-                </tr>`;
+                return `
+                    <tr>
+                        <td>${w.wallet}<\/td>
+                        <td>${w.amount} ج.م<\/td>
+                        <td>${w.fee || 5} ج.م<\/td>
+                        <td>${netAmount} ج.م<\/td>
+                        <td><span class="status-badge ${statusClass}">${statusText}<\/span><\/td>
+                        <td>${date}<\/td>
+                    <\/tr>
+                `;
             }).join('');
         }
         document.getElementById('withdrawLogsModal').classList.remove('hidden');
@@ -638,14 +697,14 @@ async function init() {
     document.getElementById('gmailLogsBtn')?.addEventListener('click', showGmailLogs);
     document.getElementById('withdrawLogsBtn')?.addEventListener('click', showWithdrawLogs);
     
-    // منع إغلاق نافذة إنشاء Gmail بالطريقة العادية
+    // منع إغلاق نافذة إنشاء Gmail بدون إكمال
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const modal = e.target.closest('.modal');
             if (modal && modal.id === 'createModal' && isRequestLocked && currentGeneratedData) {
                 Swal.fire({
                     title: '⚠️ طلب قيد الإنشاء',
-                    text: 'لا يمكنك إغلاق هذه النافذة قبل إكمال الطلب. يرجى الضغط على "تم إنشاء الجميل" أو "إلغاء"',
+                    text: 'لا يمكنك إغلاق هذه النافذة قبل إكمال الطلب. يرجى الضغط على "إرسال الطلب مع الصورة" أو "إلغاء"',
                     icon: 'warning',
                     confirmButtonText: 'حسناً'
                 });
@@ -696,6 +755,7 @@ async function init() {
             currentBalance = parseFloat(result.balance) || 0;
             currentPendingBalance = parseFloat(result.pendingBalance) || 0;
             currentBlocked = result.blocked === "TRUE";
+            currentStatusText = result.statusText || "نشط";
             document.getElementById('balance').textContent = currentBalance;
             document.getElementById('pendingBalance').textContent = currentPendingBalance;
             
