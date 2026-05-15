@@ -1,5 +1,5 @@
 // ========================================
-// B Gmail - script.js (النسخة النهائية مع جميع التعديلات والأسماء الكاملة)
+// B Gmail - script.js (النسخة النهائية المستقرة - الرجوع للكود الأول)
 // ========================================
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhqm0X3ZotU1CTxYyPDWgESbQPJuCvcs4MkGjgyPNXB4M7pUot_L1DsIk6bAF8lQHv/exec';
@@ -554,7 +554,7 @@ function recordGmailCreation() {
 }
 
 // ========================================
-// إنشاء Gmail مع رفع الصورة
+// إنشاء Gmail
 // ========================================
 
 function displayGmailData(data) {
@@ -644,4 +644,332 @@ async function confirmGmailCreation() {
         html: '⚠️ <strong>تحذير هام!</strong><br><br>هل قمت بإنشاء حساب Gmail بنفس البيانات الموضحة أعلاه؟<br><br>📸 <strong>ملاحظة مهمة:</strong><br>يرجى الاحتفاظ بالصورة (سكرين شوت) لحين تحويل المبلغ من الرصيد المتجمد إلى الرصيد الحالي.',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: '✅ نعم، تم الإنشاء
+        confirmButtonText: '✅ نعم، تم الإنشاء',
+        cancelButtonText: '❌ إلغاء'
+    });
+    
+    if (!confirmed.isConfirmed) {
+        saveGmailRequestPermanently(currentGeneratedData);
+        showToast('📦 تم حفظ طلب Gmail الخاص بك، يمكنك استئنافه لاحقاً', false);
+        document.getElementById('createModal').classList.add('hidden');
+        return;
+    }
+    
+    setButtonLoading('confirmCreateBtn', true);
+    
+    const file = fileInput.files[0];
+    const fullGmail = currentGeneratedData.gmail + '@gmail.com';
+    
+    const result = await callAPI('submitGmail', {
+        phone: cleanPhone(currentUser.phone),
+        fullName: currentGeneratedData.name,
+        gmail: fullGmail,
+        password: currentGeneratedData.password,
+        price: gmailPrice
+    });
+    
+    if (!result?.success) {
+        setButtonLoading('confirmCreateBtn', false);
+        showToast(result?.error || 'حدث خطأ', true);
+        return;
+    }
+    
+    // رفع الصورة
+    const formData = new FormData();
+    formData.append('action', 'uploadImage');
+    formData.append('phone', cleanPhone(currentUser.phone));
+    formData.append('gmail', fullGmail);
+    formData.append('imageBlob', file);
+    
+    try {
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: formData
+        });
+    } catch (error) {
+        console.error('Upload error:', error);
+    }
+    
+    setButtonLoading('confirmCreateBtn', false);
+    recordGmailCreation();
+    await loadBalance();
+    document.getElementById('createModal').classList.add('hidden');
+    clearPermanentGmailRequest();
+    
+    Swal.fire({
+        icon: 'success',
+        title: 'تم الإرسال بنجاح!',
+        html: 'سيتم مراجعة الجميل خلال 2-4 أيام.<br><br>📸 <strong>تذكير هام:</strong><br>يرجى الاحتفاظ بالصورة (سكرين شوت) لحين تحويل المبلغ من الرصيد المتجمد إلى الرصيد الحالي.',
+        timer: 5000,
+        showConfirmButton: true
+    });
+}
+
+// ========================================
+// سحب الأموال
+// ========================================
+
+function showWithdrawModal() {
+    if (currentBlocked) {
+        showToast('❌ حسابك محظور!', true);
+        return;
+    }
+    document.getElementById('availableBalanceHint').textContent = currentBalance;
+    document.getElementById('withdrawModal').classList.remove('hidden');
+}
+
+async function submitWithdrawRequest() {
+    const wallet = document.getElementById('walletNumber')?.value.trim();
+    const amount = parseFloat(document.getElementById('withdrawAmount')?.value || 0);
+    const fee = 5;
+    const totalDeduction = amount + fee;
+    
+    if (!wallet || isNaN(amount) || amount <= 0 || amount < 30 || totalDeduction > currentBalance) {
+        showToast('يرجى التحقق من البيانات والمبلغ', true);
+        return;
+    }
+    
+    const confirmWithdraw = await Swal.fire({
+        title: 'تأكيد سحب الأموال',
+        html: `المبلغ: ${amount} ج.م<br>المصاريف: ${fee} ج.م<br><strong>الصافي: ${amount} ج.م</strong>`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '✅ تأكيد',
+        cancelButtonText: '❌ إلغاء'
+    });
+    
+    if (!confirmWithdraw.isConfirmed) return;
+    
+    setButtonLoading('submitWithdrawBtn', true);
+    const result = await callAPI('submitWithdrawal', { phone: cleanPhone(currentUser.phone), wallet, amount, fee });
+    setButtonLoading('submitWithdrawBtn', false);
+    
+    if (result?.success) {
+        await loadBalance();
+        document.getElementById('withdrawModal').classList.add('hidden');
+        document.getElementById('walletNumber').value = '';
+        document.getElementById('withdrawAmount').value = '';
+        Swal.fire({ icon: 'success', title: 'تم إرسال طلب السحب', timer: 2500, showConfirmButton: false });
+    } else {
+        showToast(result?.error || 'حدث خطأ', true);
+    }
+}
+
+// ========================================
+// عرض السجلات للمستخدم
+// ========================================
+
+async function showGmailLogs() {
+    if (!currentUser) return;
+    setButtonLoading('gmailLogsBtn', true);
+    const result = await callAPI('getMyGmails', { phone: cleanPhone(currentUser.phone) });
+    setButtonLoading('gmailLogsBtn', false);
+    
+    if (result?.success && result.gmails) {
+        const filter = document.getElementById('gmailStatusFilter')?.value || 'all';
+        let filtered = result.gmails;
+        if (filter !== 'all') filtered = result.gmails.filter(g => g.status === filter);
+        
+        const tbody = document.getElementById('gmailLogsBody');
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<td><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>';
+        } else {
+            tbody.innerHTML = filtered.reverse().map(rec => {
+                let statusText = '', statusClass = '';
+                if (rec.status === 'Pending') { 
+                    statusText = '⏳ قيد المراجعة'; 
+                    statusClass = 'status-pending'; 
+                }
+                else if (rec.status === 'Approved') { 
+                    statusText = '✅ مقبول'; 
+                    statusClass = 'status-approved'; 
+                }
+                else if (rec.status === 'Rejected') { 
+                    statusText = '❌ مرفوض'; 
+                    statusClass = 'status-rejected'; 
+                }
+                const email = rec.gmail.replace('@gmail.com', '');
+                const date = new Date(rec.timestamp).toLocaleDateString('ar-EG');
+                return `
+                    <tr>
+                        <td style="direction:ltr">${email}@gmail.com<\/td>
+                        <td><span class="status-badge ${statusClass}">${statusText}<\/span><\/td>
+                        <td>${date}<\/td>
+                    <\/tr>
+                `;
+            }).join('');
+        }
+        document.getElementById('gmailLogsModal').classList.remove('hidden');
+    } else {
+        showToast('حدث خطأ في تحميل السجلات', true);
+    }
+}
+
+async function showWithdrawLogs() {
+    if (!currentUser) return;
+    setButtonLoading('withdrawLogsBtn', true);
+    const result = await callAPI('getMyWithdrawals', { phone: cleanPhone(currentUser.phone) });
+    setButtonLoading('withdrawLogsBtn', false);
+    
+    if (result?.success && result.withdrawals) {
+        const filter = document.getElementById('withdrawStatusFilter')?.value || 'all';
+        let filtered = result.withdrawals;
+        if (filter !== 'all') filtered = result.withdrawals.filter(w => w.status === filter);
+        
+        const tbody = document.getElementById('withdrawLogsBody');
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<td><td colspan="6" class="no-data">📭 لا توجد سحوبات<\/td><\/tr>';
+        } else {
+            tbody.innerHTML = filtered.reverse().map(w => {
+                let statusText = '', statusClass = '';
+                if (w.status === 'Pending') { 
+                    statusText = '⏳ قيد المراجعة'; 
+                    statusClass = 'status-pending'; 
+                }
+                else if (w.status === 'Completed') { 
+                    statusText = '✅ مكتمل'; 
+                    statusClass = 'status-completed'; 
+                }
+                else if (w.status === 'Rejected') { 
+                    statusText = '❌ مرفوض'; 
+                    statusClass = 'status-rejected'; 
+                }
+                const date = new Date(w.timestamp).toLocaleDateString('ar-EG');
+                const netAmount = w.amount - (w.fee || 5);
+                return `
+                    <tr>
+                        <td>${w.wallet}<\/td>
+                        <td>${w.amount} ج.م<\/td>
+                        <td>${w.fee || 5} ج.م<\/td>
+                        <td>${netAmount} ج.م<\/td>
+                        <td><span class="status-badge ${statusClass}">${statusText}<\/span><\/td>
+                        <td>${date}<\/td>
+                    <\/tr>
+                `;
+            }).join('');
+        }
+        document.getElementById('withdrawLogsModal').classList.remove('hidden');
+    } else {
+        showToast('حدث خطأ في تحميل السجلات', true);
+    }
+}
+
+// ========================================
+// بدء التشغيل
+// ========================================
+
+async function init() {
+    document.getElementById('registerBtn')?.addEventListener('click', register);
+    document.getElementById('showLoginBtn')?.addEventListener('click', showLoginScreen);
+    document.getElementById('doLoginBtn')?.addEventListener('click', login);
+    document.getElementById('showRegisterBtn')?.addEventListener('click', showRegisterScreen);
+    document.getElementById('logoutBtn')?.addEventListener('click', logout);
+    document.getElementById('createGmailBtn')?.addEventListener('click', showCreateGmailModal);
+    document.getElementById('confirmCreateBtn')?.addEventListener('click', confirmGmailCreation);
+    document.getElementById('changeGmailSmallBtn')?.addEventListener('click', changeGmail);
+    document.getElementById('withdrawBtn')?.addEventListener('click', showWithdrawModal);
+    document.getElementById('submitWithdrawBtn')?.addEventListener('click', submitWithdrawRequest);
+    document.getElementById('gmailLogsBtn')?.addEventListener('click', showGmailLogs);
+    document.getElementById('withdrawLogsBtn')?.addEventListener('click', showWithdrawLogs);
+    
+    document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const modal = e.target.closest('.modal');
+            if (modal && modal.id === 'createModal' && isRequestLocked && currentGeneratedData) {
+                Swal.fire({
+                    title: '⚠️ طلب قيد الإنشاء',
+                    text: 'لا يمكنك إغلاق هذه النافذة قبل إكمال الطلب',
+                    icon: 'warning',
+                    confirmButtonText: 'حسناً'
+                });
+                return;
+            }
+            modal?.classList.add('hidden');
+        });
+    });
+    
+    window.addEventListener('click', (e) => {
+        if (e.target.classList?.contains('modal') && e.target.id === 'createModal' && isRequestLocked && currentGeneratedData) {
+            Swal.fire({
+                title: '⚠️ طلب قيد الإنشاء',
+                text: 'لا يمكنك إغلاق هذه النافذة قبل إكمال الطلب',
+                icon: 'warning',
+                confirmButtonText: 'حسناً'
+            });
+            return;
+        }
+        if (e.target.classList?.contains('modal')) {
+            e.target.classList.add('hidden');
+        }
+    });
+    
+    window.addEventListener('beforeunload', (e) => {
+        if (isRequestLocked && currentGeneratedData) {
+            e.preventDefault();
+            e.returnValue = 'لديك طلب Gmail غير مكتمل. هل تريد المغادرة؟ سيتم حفظ الطلب تلقائياً.';
+            saveGmailRequestPermanently(currentGeneratedData);
+            return e.returnValue;
+        }
+    });
+    
+    document.getElementById('gmailStatusFilter')?.addEventListener('change', showGmailLogs);
+    document.getElementById('withdrawStatusFilter')?.addEventListener('change', showWithdrawLogs);
+    
+    window.copyToClipboard = copyToClipboard;
+    window.togglePass = togglePass;
+    window.changeGmail = changeGmail;
+    
+    const savedPhone = localStorage.getItem('userPhone');
+    const savedPassword = localStorage.getItem('userPassword');
+    
+    if (savedPhone && savedPassword) {
+        currentUser = { phone: savedPhone };
+        const result = await callAPI('login', { phone: cleanPhone(savedPhone), pass: savedPassword });
+        if (result?.result === "found") {
+            currentUser = { phone: result.phone, name: result.name };
+            currentBalance = parseFloat(result.balance) || 0;
+            currentPendingBalance = parseFloat(result.pendingBalance) || 0;
+            currentBlocked = result.blocked === "TRUE";
+            currentStatusText = result.statusText || "نشط";
+            document.getElementById('balance').textContent = currentBalance;
+            document.getElementById('pendingBalance').textContent = currentPendingBalance;
+            
+            if (!currentBlocked) {
+                await loadServicePrice();
+                showMainScreen();
+                startBalanceUpdates();
+                
+                const savedRequest = loadPermanentGmailRequest();
+                if (savedRequest && !currentGeneratedData) {
+                    setTimeout(() => {
+                        Swal.fire({
+                            title: '📦 لديك طلب Gmail غير مكتمل',
+                            text: 'هل تريد استئناف إنشاء الجميل السابق؟',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: '✅ نعم',
+                            cancelButtonText: '❌ لا',
+                            allowOutsideClick: false
+                        }).then((res) => {
+                            if (res.isConfirmed) {
+                                currentGeneratedData = savedRequest;
+                                displayGmailData(currentGeneratedData);
+                                document.getElementById('createModal').classList.remove('hidden');
+                            } else {
+                                clearPermanentGmailRequest();
+                            }
+                        });
+                    }, 500);
+                }
+            } else {
+                showLoginScreen();
+            }
+        } else {
+            showLoginScreen();
+        }
+    } else {
+        showRegisterScreen();
+    }
+}
+
+window.addEventListener('DOMContentLoaded', init);
