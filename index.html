@@ -3,282 +3,336 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>B Gmail - منصة إنشاء حسابات Gmail</title>
+    <title>Genezis Gmail | منصة احترافية لإنشاء حسابات Gmail</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-    <div id="app">
-        <!-- ======================================== -->
-        <!-- شاشة التسجيل -->
-        <!-- ======================================== -->
-        <div id="registerScreen" class="screen">
-            <div class="card">
-                <div class="welcome-icon">📧</div>
-                <h1>B Gmail</h1>
-                <p>منصة متخصصة في إنشاء حسابات Gmail بسرعة فائقة وأمان عالي</p>
-                
-                <div class="features-list">
-                    <div class="feature">🚀 سرعة فائقة في الإنشاء</div>
-                    <div class="feature">👤 أكثر من 1000 اسم حقيقي</div>
-                    <div class="feature">🛡️ نظام حماية ذكي ضد التلاعب</div>
-                    <div class="feature">⏱️ مراجعة سريعة خلال 2-4 أيام</div>
-                    <div class="feature">💰 سحب الأموال بسهولة (الحد الأدنى 30 ج.م)</div>
+
+<!-- شاشة تحميل -->
+<div id="loadingScreen" class="loading-screen">
+    <div class="loader">
+        <div class="loader-spinner"></div>
+        <p>جاري تحميل المنصة...</p>
+    </div>
+</div>
+
+<div id="app">
+    <!-- شاشة تسجيل الدخول (الصفحة الرئيسية) -->
+    <div id="loginScreen" class="screen">
+        <div class="glass-card">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fas fa-envelope"></i>
                 </div>
-                
-                <div class="form-group">
-                    <label>📱 رقم الهاتف:</label>
-                    <input type="tel" id="regPhone" placeholder="مثال: 01012345678" class="form-input" dir="ltr">
+                <h1>Genezis Gmail</h1>
+                <p class="tagline">منصة إنشاء حسابات Gmail بسرعة فائقة</p>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-phone-alt"></i> رقم الهاتف</label>
+                <input type="tel" id="loginPhone" placeholder="01012345678" class="form-control" dir="ltr">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                <div class="password-wrapper">
+                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" class="form-control">
+                    <button type="button" class="toggle-eye" onclick="togglePass('loginPassword')"><i class="fas fa-eye"></i></button>
                 </div>
-                <div class="form-group">
-                    <label>👤 الاسم الكامل:</label>
-                    <input type="text" id="regName" placeholder="أدخل اسمك الكامل" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>🔐 كلمة المرور:</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="regPassword" placeholder="أدخل كلمة المرور" class="form-input">
-                        <button type="button" class="toggle-pass" onclick="togglePass('regPassword')">👁️</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>🔐 تأكيد كلمة المرور:</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="regConfirmPassword" placeholder="أعد إدخال كلمة المرور" class="form-input">
-                        <button type="button" class="toggle-pass" onclick="togglePass('regConfirmPassword')">👁️</button>
-                    </div>
-                </div>
-                
-                <button id="registerBtn" class="btn-primary">🔐 تسجيل حساب جديد</button>
-                <button id="showLoginBtn" class="btn-secondary">🔑 لدي حساب بالفعل</button>
+            </div>
+            
+            <button id="doLoginBtn" class="btn btn-primary btn-block"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</button>
+            
+            <div class="auth-footer">
+                <p>ليس لديك حساب؟ <a href="#" id="showRegisterBtn">إنشاء حساب جديد</a></p>
             </div>
         </div>
+    </div>
 
-        <!-- ======================================== -->
-        <!-- شاشة تسجيل الدخول -->
-        <!-- ======================================== -->
-        <div id="loginScreen" class="screen hidden">
-            <div class="card">
-                <div class="welcome-icon">🔐</div>
-                <h1>تسجيل الدخول</h1>
-                
-                <div class="form-group">
-                    <label>📱 رقم الهاتف:</label>
-                    <input type="tel" id="loginPhone" placeholder="مثال: 01012345678" class="form-input" dir="ltr">
+    <!-- شاشة التسجيل -->
+    <div id="registerScreen" class="screen hidden">
+        <div class="glass-card">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fas fa-user-plus"></i>
                 </div>
-                <div class="form-group">
-                    <label>🔐 كلمة المرور:</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" class="form-input">
-                        <button type="button" class="toggle-pass" onclick="togglePass('loginPassword')">👁️</button>
-                    </div>
+                <h1>إنشاء حساب</h1>
+                <p class="tagline">سجل الآن وابدأ في الربح</p>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-user"></i> الاسم الكامل</label>
+                <input type="text" id="regName" placeholder="أدخل اسمك الكامل" class="form-control">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-phone-alt"></i> رقم الهاتف</label>
+                <input type="tel" id="regPhone" placeholder="01012345678" class="form-control" dir="ltr">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                <div class="password-wrapper">
+                    <input type="password" id="regPassword" placeholder="أدخل كلمة المرور" class="form-control">
+                    <button type="button" class="toggle-eye" onclick="togglePass('regPassword')"><i class="fas fa-eye"></i></button>
                 </div>
-                
-                <button id="doLoginBtn" class="btn-primary">🔑 دخول</button>
-                <button id="showRegisterBtn" class="btn-secondary">📝 ليس لديك حساب؟ سجل الآن</button>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> تأكيد كلمة المرور</label>
+                <div class="password-wrapper">
+                    <input type="password" id="regConfirmPassword" placeholder="أعد إدخال كلمة المرور" class="form-control">
+                    <button type="button" class="toggle-eye" onclick="togglePass('regConfirmPassword')"><i class="fas fa-eye"></i></button>
+                </div>
+            </div>
+            
+            <button id="registerBtn" class="btn btn-primary btn-block"><i class="fas fa-check-circle"></i> إنشاء حساب</button>
+            
+            <div class="auth-footer">
+                <p>لديك حساب بالفعل؟ <a href="#" id="showLoginBtn">تسجيل الدخول</a></p>
             </div>
         </div>
+    </div>
 
-        <!-- ======================================== -->
-        <!-- الشاشة الرئيسية -->
-        <!-- ======================================== -->
-        <div id="mainScreen" class="screen hidden">
-            <div class="header">
-                <div class="header-top">
-                    <h1>B Gmail</h1>
-                    <button id="logoutBtn" class="btn-logout">🚪 تسجيل خروج</button>
+    <!-- الشاشة الرئيسية (لوحة التحكم) -->
+    <div id="mainScreen" class="screen hidden">
+        <div class="dashboard">
+            <div class="dashboard-header">
+                <div class="user-info">
+                    <div class="avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="user-details">
+                        <h3 id="userName">مرحباً بك</h3>
+                        <p id="userPhone">---</p>
+                    </div>
                 </div>
-                <div class="balance-card">
-                    <div class="balance-item">
-                        <span class="balance-label">💰 الرصيد الحالي</span>
-                        <span class="balance-value" id="balance">0</span>
+                <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+
+            <div class="balance-grid">
+                <div class="balance-card balance-card-primary">
+                    <div class="balance-icon"><i class="fas fa-wallet"></i></div>
+                    <div class="balance-info">
+                        <span class="balance-label">الرصيد الحالي</span>
+                        <span class="balance-amount" id="balance">0</span>
                         <span class="balance-currency">ج.م</span>
                     </div>
-                    <div class="balance-item pending">
-                        <span class="balance-label">⏳ الرصيد المتجمد</span>
-                        <span class="balance-value" id="pendingBalance">0</span>
+                </div>
+                <div class="balance-card balance-card-warning">
+                    <div class="balance-icon"><i class="fas fa-clock"></i></div>
+                    <div class="balance-info">
+                        <span class="balance-label">الرصيد المتجمد</span>
+                        <span class="balance-amount" id="pendingBalance">0</span>
                         <span class="balance-currency">ج.م</span>
                     </div>
                 </div>
             </div>
 
-            <div class="services-section">
-                <h2>الخدمات المتاحة</h2>
-                <button id="createGmailBtn" class="service-btn">
-                    <span class="service-icon">📧</span>
-                    <div class="service-info">
-                        <span class="service-title">إنشاء حساب Gmail</span>
-                        <span class="service-price" id="servicePrice">--</span>
+            <div class="menu-grid">
+                <div class="menu-item" id="createGmailBtn">
+                    <div class="menu-icon"><i class="fas fa-envelope-open-text"></i></div>
+                    <div class="menu-text">
+                        <h4>إنشاء Gmail</h4>
+                        <p id="servicePrice">-- ج.م</p>
                     </div>
-                </button>
-            </div>
+                    <i class="fas fa-chevron-left menu-arrow"></i>
+                </div>
 
-            <div class="actions-section">
-                <button id="withdrawBtn" class="btn-withdraw">💸 سحب الأموال</button>
-                <button id="gmailLogsBtn" class="btn-logs">📋 سجلات الجميلات</button>
-                <button id="withdrawLogsBtn" class="btn-logs">📊 سجلات السحب</button>
-            </div>
-        </div>
-    </div>
+                <div class="menu-item menu-withdraw" id="withdrawBtn">
+                    <div class="menu-icon"><i class="fas fa-money-bill-wave"></i></div>
+                    <div class="menu-text">
+                        <h4>سحب الأموال</h4>
+                        <p>الحد الأدنى 30 ج.م</p>
+                    </div>
+                    <i class="fas fa-chevron-left menu-arrow"></i>
+                </div>
 
-    <!-- ======================================== -->
-    <!-- نافذة إنشاء Gmail -->
-    <!-- ======================================== -->
-    <div id="createModal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>إنشاء حساب Gmail جديد</h3>
-                <button class="close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="generated-data">
-                    <div class="data-row">
-                        <label>👤 الاسم:</label>
-                        <span id="generatedName">---</span>
+                <div class="menu-item menu-logs" id="gmailLogsBtn">
+                    <div class="menu-icon"><i class="fas fa-history"></i></div>
+                    <div class="menu-text">
+                        <h4>سجلات الجميلات</h4>
+                        <p>عرض جميع طلباتك</p>
                     </div>
-                    <div class="data-row">
-                        <label>📧 البريد الإلكتروني:</label>
-                        <span id="generatedGmail">---</span>
-                        <button id="changeGmailSmallBtn" class="copy-btn-small">🔄 تغيير</button>
-                    </div>
-                    <div class="data-row">
-                        <label>🔐 كلمة المرور:</label>
-                        <span id="generatedPassword">---</span>
-                    </div>
-                    <div class="data-row">
-                        <label>⚧ الجنس / سنة الميلاد:</label>
-                        <span id="generatedGenderAge">---</span>
-                    </div>
+                    <i class="fas fa-chevron-left menu-arrow"></i>
                 </div>
-                
-                <!-- رفع الصورة -->
-                <div class="form-group">
-                    <label>📸 صورة سكرين شوت للحساب (مطلوب):</label>
-                    <input type="file" id="gmailScreenshot" accept="image/*" class="form-input">
-                    <small class="form-hint">ارفع صورة للبريد الجديد لتأكيد الملكية</small>
-                </div>
-                
-                <div class="warning-message">
-                    <div class="warning-icon">⚠️</div>
-                    <div class="warning-text">
-                        <strong>تحذير هام!</strong><br>
-                        يرجى التأكد من إنشاء حساب Gmail بنفس البيانات الموضحة أعلاه.<br>
-                        في حالة التلاعب أو إرسال بيانات غير صحيحة،<br>
-                        <span class="warning-highlight">سيتم حظر حسابك نهائياً من الموقع.</span>
-                    </div>
-                </div>
-                
-                <button id="confirmCreateBtn" class="btn-danger">✅ تم إنشاء الجميل</button>
-            </div>
-        </div>
-    </div>
 
-    <!-- ======================================== -->
-    <!-- نافذة السحب -->
-    <!-- ======================================== -->
-    <div id="withdrawModal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>سحب الأموال</h3>
-                <button class="close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>🏦 رقم المحفظة / الكاش:</label>
-                    <input type="text" id="walletNumber" placeholder="أدخل رقم المحفظة" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>💰 المبلغ المراد سحبه:</label>
-                    <input type="number" id="withdrawAmount" placeholder="أدخل المبلغ" class="form-input">
-                    <small class="form-hint">الرصيد المتاح: <span id="availableBalanceHint">0</span> ج.م</small>
-                    <small class="form-hint-min">⚠️ مصاريف السحب: 5 جنيه + الحد الأدنى 30 جنيه</small>
-                </div>
-                <button id="submitWithdrawBtn" class="btn-primary">إرسال طلب السحب</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================================== -->
-    <!-- نافذة سجلات الجميلات -->
-    <!-- ======================================== -->
-    <div id="gmailLogsModal" class="modal hidden modal-large">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>📧 سجلات الجميلات</h3>
-                <button class="close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="review-notice">
-                    ⏳ <strong>ملاحظة:</strong> يتم مراجعة الجميلات خلال 2 إلى 4 أيام. الرجاء الانتظار بصبر.
-                </div>
-                <div class="logs-filter">
-                    <select id="gmailStatusFilter" class="form-input">
-                        <option value="all">الكل</option>
-                        <option value="Pending">⏳ قيد المراجعة</option>
-                        <option value="Approved">✅ مقبول</option>
-                        <option value="Rejected">❌ مرفوض</option>
-                    </select>
-                </div>
-                <div class="logs-table-container">
-                    <table class="logs-table">
-                        <thead>
-                            <tr>
-                                <th>البريد الإلكتروني</th>
-                                <th>الحالة</th>
-                                <th>التاريخ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="gmailLogsBody">
-                            <tr><td colspan="3" class="no-data">📭 لا توجد جميلات<\/td><\/tr>
-                        </tbody>
-                    </table>
+                <div class="menu-item menu-withdraw-logs" id="withdrawLogsBtn">
+                    <div class="menu-icon"><i class="fas fa-receipt"></i></div>
+                    <div class="menu-text">
+                        <h4>سجلات السحب</h4>
+                        <p>عرض سجلات السحب</p>
+                    </div>
+                    <i class="fas fa-chevron-left menu-arrow"></i>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- ======================================== -->
-    <!-- نافذة سجلات السحب -->
-    <!-- ======================================== -->
-    <div id="withdrawLogsModal" class="modal hidden modal-large">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>💵 سجلات السحب</h3>
-                <button class="close-modal">&times;</button>
+<!-- نافذة إنشاء Gmail -->
+<div id="createModal" class="modal-overlay hidden">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3><i class="fas fa-envelope"></i> إنشاء حساب Gmail</h3>
+            <button class="close-modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="data-card">
+                <div class="data-row">
+                    <span class="data-label"><i class="fas fa-user"></i> الاسم:</span>
+                    <div class="data-value-wrapper">
+                        <span class="data-value" id="generatedName">---</span>
+                        <button class="copy-btn" onclick="copyToClipboardFromSpan('generatedName')"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+                <div class="data-row">
+                    <span class="data-label"><i class="fas fa-envelope"></i> البريد:</span>
+                    <div class="data-value-wrapper">
+                        <span class="data-value" id="generatedGmail">---</span>
+                        <button class="copy-btn" onclick="copyToClipboardFromSpan('generatedGmail')"><i class="fas fa-copy"></i></button>
+                        <button id="changeGmailSmallBtn" class="change-btn"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                </div>
+                <div class="data-row">
+                    <span class="data-label"><i class="fas fa-lock"></i> كلمة السر:</span>
+                    <div class="data-value-wrapper">
+                        <span class="data-value" id="generatedPassword">---</span>
+                        <button class="copy-btn" onclick="copyToClipboardFromSpan('generatedPassword')"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+                <div class="data-row">
+                    <span class="data-label"><i class="fas fa-venus-mars"></i> الجنس / السنة:</span>
+                    <span class="data-value" id="generatedGenderAge">---</span>
+                </div>
             </div>
-            <div class="modal-body">
-                <div class="logs-filter">
-                    <select id="withdrawStatusFilter" class="form-input">
-                        <option value="all">الكل</option>
-                        <option value="Pending">⏳ قيد المراجعة</option>
-                        <option value="Completed">✅ مكتمل</option>
-                        <option value="Rejected">❌ مرفوض</option>
-                    </select>
+
+            <div class="upload-area">
+                <label><i class="fas fa-camera"></i> صورة سكرين شوت</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="gmailScreenshot" accept="image/*" hidden>
+                    <button class="upload-btn" onclick="document.getElementById('gmailScreenshot').click()"><i class="fas fa-cloud-upload-alt"></i> اختر صورة</button>
+                    <span id="fileName" class="file-name">لم يتم اختيار ملف</span>
                 </div>
-                <div class="logs-table-container">
-                    <table class="logs-table">
-                        <thead>
-                            <tr>
-                                <th>رقم المحفظة</th>
-                                <th>المبلغ المطلوب</th>
-                                <th>المصاريف (5ج)</th>
-                                <th>الصافي المستلم</th>
-                                <th>الحالة</th>
-                                <th>التاريخ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="withdrawLogsBody">
-                            <tr><td colspan="6" class="no-data">📭 لا توجد سحوبات<\/td><\/tr>
-                        </tbody>
-                    </table>
+            </div>
+
+            <div class="warning-box">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="warning-text">
+                    <strong>تنبيه هام!</strong>
+                    <p>احتفظ بالصورة لحين تحويل الرصيد.</p>
                 </div>
+            </div>
+
+            <button id="confirmCreateBtn" class="btn btn-danger btn-block"><i class="fas fa-check-circle"></i> تأكيد وإرسال</button>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة السحب -->
+<div id="withdrawModal" class="modal-overlay hidden">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3><i class="fas fa-money-bill-wave"></i> سحب الأموال</h3>
+            <button class="close-modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="info-box">
+                <div class="info-row">
+                    <span>الرصيد المتاح:</span>
+                    <strong id="availableBalanceHint">0</strong>
+                    <span>ج.م</span>
+                </div>
+                <div class="info-row small">
+                    <span>الحد الأدنى: 30 ج.م</span>
+                    <span>المصاريف: 5 ج.م</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-wallet"></i> رقم المحفظة</label>
+                <input type="text" id="walletNumber" class="form-control" placeholder="أدخل رقم المحفظة">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-coins"></i> المبلغ المراد سحبه</label>
+                <input type="number" id="withdrawAmount" class="form-control" placeholder="أدخل المبلغ">
+            </div>
+            <button id="submitWithdrawBtn" class="btn btn-primary btn-block"><i class="fas fa-check-circle"></i> إرسال طلب السحب</button>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة سجلات الجميلات -->
+<div id="gmailLogsModal" class="modal-overlay hidden">
+    <div class="modal-container modal-large">
+        <div class="modal-header">
+            <h3><i class="fas fa-history"></i> سجلات الجميلات</h3>
+            <button class="close-modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="notice-box">
+                <i class="fas fa-clock"></i> يتم مراجعة الجميلات خلال 2 إلى 4 أيام
+            </div>
+            <div class="filter-group">
+                <select id="gmailStatusFilter">
+                    <option value="all">📋 الكل</option>
+                    <option value="Pending">⏳ قيد المراجعة</option>
+                    <option value="Approved">✅ مقبول</option>
+                    <option value="Rejected">❌ مرفوض</option>
+                </select>
+            </div>
+            <div class="table-wrapper" id="gmailLogsBody">
+                <div class="empty-state"><i class="fas fa-inbox"></i> لا توجد جميلات</div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- رسالة التنبيه -->
-    <div id="toast" class="toast hidden"></div>
+<!-- نافذة سجلات السحب -->
+<div id="withdrawLogsModal" class="modal-overlay hidden">
+    <div class="modal-container modal-large">
+        <div class="modal-header">
+            <h3><i class="fas fa-receipt"></i> سجلات السحب</h3>
+            <button class="close-modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="filter-group">
+                <select id="withdrawStatusFilter">
+                    <option value="all">📋 الكل</option>
+                    <option value="Pending">⏳ قيد المراجعة</option>
+                    <option value="Completed">✅ مكتمل</option>
+                    <option value="Rejected">❌ مرفوض</option>
+                </select>
+            </div>
+            <div class="table-wrapper" id="withdrawLogsBody">
+                <div class="empty-state"><i class="fas fa-inbox"></i> لا توجد سحوبات</div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <script src="script.js"></script>
+<div id="toast" class="toast hidden"></div>
+
+<script src="script.js"></script>
+<script>
+    // إصلاح مشكلة شاشة التحميل - إخفاؤها بعد تحميل الصفحة مباشرة
+    window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            var loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+        }, 800);
+    });
+</script>
+    <script>
+    // إصلاح مشكلة شاشة التحميل - إخفاؤها بعد تحميل الصفحة مباشرة
+    window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            var loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+        }, 800);
+    });
+</script>
 </body>
-                            </html>
+    </html>
