@@ -341,20 +341,39 @@
         }, 800);
     });
 
-    function playTutorialVideo() {
+
+        function playTutorialVideo() {
+    // الرابط اللي انت حاططه
+    const shortsUrl = 'https://youtube.com/shorts/Gj-lncAqT18?si=4IBBaYfjvgMQwhKp';
+    
+    // تحويل رابط Shorts إلى رابط embed عادي
+    const videoId = shortsUrl.split('/shorts/')[1].split('?')[0];
+    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    
     Swal.fire({
         title: '🎥 طريقة عمل الجميل للكسب',
-        text: 'سيتم فتح الفيديو في نافذة جديدة',
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonText: 'فتح الفيديو',
-        cancelButtonText: 'إلغاء'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.open('https://youtube.com/shorts/Gj-lncAqT18?si=4IBBaYfjvgMQwhKp', '_blank');
-        }
+        html: `
+            <div style="text-align: center;">
+                <iframe width="100%" height="400" 
+                        src="${embedUrl}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                </iframe>
+                <p style="color: #aaa; font-size: 12px; margin-top: 10px;">
+                    شاهد الفيديو لمعرفة كيفية إنشاء حساب Gmail والربح
+                </p>
+            </div>
+        `,
+        background: '#12172f',
+        color: '#fff',
+        showConfirmButton: true,
+        confirmButtonText: 'إغلاق',
+        width: '650px'
     });
 }
+
+document.getElementById('watchTutorialBtn')?.addEventListener('click', playTutorialVideo);
     </script>
 </body>
     </html>
