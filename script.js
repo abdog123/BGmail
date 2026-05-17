@@ -1,22 +1,21 @@
 // ========================================
-// Genezis Gmail - script.js (مع إرسال الصور إلى تليجرام)
-// رابط البوت: 8683585634:AAEzjHOyOouQemsaT9HNlgq2W7d68uNO41k
-// معرف الشات: 7526387894
+// Genezis Gmail - script.js (مع نظام الحظر المؤقت)
 // ========================================
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhqm0X3ZotU1CTxYyPDWgESbQPJuCvcs4MkGjgyPNXB4M7pUot_L1DsIk6bAF8lQHv/exec';
-const TELEGRAM_BOT_TOKEN = '8683585634:AAEzjHOyOouQemsaT9HNlgq2W7d68uNO41k';
-const TELEGRAM_CHAT_ID = '7526387894';
 
-// المتغيرات العامة
+// نظام الحظر المؤقت (Rate Limiting)
+let tempBlockUntil = null;
+let gmailCreationHistory = [];
+
 let currentUser = null;
 let currentBalance = 0;
 let currentPendingBalance = 0;
 let currentBlocked = false;
+let currentStatusText = "نشط";
 let gmailPrice = 0;
 let balanceUpdateInterval = null;
-let tempBlockUntil = null;
-let gmailCreationHistory = [];
+
 let usedGmailHistory = [];
 let currentGeneratedData = null;
 let isRequestLocked = false;
@@ -24,6 +23,7 @@ let isRequestLocked = false;
 // ========================================
 // الأسماء والبيانات المحلية
 // ========================================
+
 
 const NAMES_LIST = [
     "James Smith", "Emma Johnson", "Michael Brown", "Olivia Williams", "David Jones",
@@ -175,12 +175,9 @@ const GMAIL_PREFIXES = [
     "gabrielclark", "miamartin", "oliverdavis"
 ];
 
+
 const PASSWORDS_LIST = ["aass1122"];
 const GENDERS = ["ذكر", "أنثى"];
-
-// ========================================
-// دوال مساعدة
-// ========================================
 
 function generateUniqueGmail() {
     let attempts = 0;
@@ -216,6 +213,83 @@ function getRandomLocalData() {
         birthYear: getRandomBirthYear()
     };
 }
+
+// ========================================
+// دوال نظام الحظر المؤقت (جديدة)
+// ========================================
+
+function checkTempBlock() {
+    if (currentBlocked) return { blocked: true, reason: "حسابك محظور نهائياً" };
+    if (tempBlockUntil && new Date() < tempBlockUntil) {
+        const remainingMinutes = Math.ceil((tempBlockUntil - new Date()) / 60000);
+        return { blocked: true, reason: `⚠️ تم حظرك مؤقتاً بسبب إنشاء جميلات كثيرة في وقت قصير. يرجى الانتظار ${remainingMinutes} دقيقة`, permanent: false };
+    }
+    if (tempBlockUntil && new Date() >= tempBlockUntil) {
+        tempBlockUntil = null;
+        gmailCreationHistory = [];
+    }
+    return { blocked: false };
+}
+
+function recordGmailCreation() {
+    const now = new Date();
+    gmailCreationHistory.push(now);
+    const oneMinuteAgo = new Date(now.getTime() - 60000);
+    gmailCreationHistory = gmailCreationHistory.filter(time => time >= oneMinuteAgo);
+    
+    // لو عمل أكثر من 3 جميلات في آخر دقيقة
+    if (gmailCreationHistory.length > 3) {
+        tempBlockUntil = new Date(now.getTime() + 3600000); // حظر لمدة ساعة
+        showToast(`⚠️ تم حظرك مؤقتاً لمدة ساعة بسبب إنشاء جميلات كثيرة!`, true);
+        return false;
+    }
+    return true;
+}
+
+// ========================================
+// حفظ واستعادة بيانات إنشاء الجميل
+// ========================================
+
+function saveGmailRequestPermanently(data) {
+    if (data) {
+        const saveData = {
+            name: data.name,
+            gmail: data.gmail,
+            password: data.password,
+            gender: data.gender,
+            birthYear: data.birthYear,
+            timestamp: new Date().toISOString()
+        };
+        localStorage.setItem('permanentGmailRequest', JSON.stringify(saveData));
+        localStorage.setItem('isRequestLocked', 'true');
+        isRequestLocked = true;
+    }
+}
+
+function loadPermanentGmailRequest() {
+    const saved = localStorage.getItem('permanentGmailRequest');
+    const locked = localStorage.getItem('isRequestLocked');
+    if (saved && locked === 'true') {
+        try {
+            isRequestLocked = true;
+            return JSON.parse(saved);
+        } catch (e) {
+            return null;
+        }
+    }
+    return null;
+}
+
+function clearPermanentGmailRequest() {
+    localStorage.removeItem('permanentGmailRequest');
+    localStorage.removeItem('isRequestLocked');
+    isRequestLocked = false;
+    currentGeneratedData = null;
+}
+
+// ========================================
+// دوال مساعدة
+// ========================================
 
 function showToast(message, isError = false) {
     const toast = document.getElementById('toast');
@@ -278,101 +352,18 @@ async function callAPI(action, params = {}) {
     }
 }
 
-// ========================================
-// إرسال الصورة إلى تليجرام
-// ========================================
-
-async function sendImageToTelegram(imageBase64, caption) {
-    try {
-        // تحويل Base64 إلى Blob
-        const byteCharacters = atob(imageBase64);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: 'image/png' });
-        
-        const formData = new FormData();
-        formData.append('chat_id', TELEGRAM_CHAT_ID);
-        formData.append('photo', blob, 'screenshot.png');
-        formData.append('caption', caption);
-        
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
-            method: 'POST',
-            body: formData
-        });
-        
-        const result = await response.json();
-        console.log('Telegram response:', result);
-        return result.ok;
-    } catch (error) {
-        console.error('Telegram send error:', error);
-        return false;
+function copyToClipboardFromSpan(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element || !element.textContent || element.textContent === '---') {
+        showToast('لا يوجد نص للنسخ', true);
+        return;
     }
-}
-
-// ========================================
-// إرسال رسالة نصية إلى تليجرام
-// ========================================
-
-async function sendMessageToTelegram(message) {
-    try {
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                chat_id: TELEGRAM_CHAT_ID,
-                text: message,
-                parse_mode: 'HTML'
-            })
-        });
-        const result = await response.json();
-        console.log('Telegram message response:', result);
-        return result.ok;
-    } catch (error) {
-        console.error('Telegram message error:', error);
-        return false;
-    }
-}
-
-// ========================================
-// حفظ واستعادة طلب Gmail
-// ========================================
-
-function savePendingGmailRequest(data) {
-    if (data) {
-        const saveData = {
-            name: data.name,
-            gmail: data.gmail,
-            password: data.password,
-            gender: data.gender,
-            birthYear: data.birthYear,
-            timestamp: new Date().toISOString()
-        };
-        localStorage.setItem('pendingGmailRequest', JSON.stringify(saveData));
-        localStorage.setItem('pendingGmailLocked', 'true');
-    }
-}
-
-function loadPendingGmailRequest() {
-    const saved = localStorage.getItem('pendingGmailRequest');
-    const locked = localStorage.getItem('pendingGmailLocked');
-    if (saved && locked === 'true') {
-        try {
-            return JSON.parse(saved);
-        } catch (e) {
-            return null;
-        }
-    }
-    return null;
-}
-
-function clearPendingGmailRequest() {
-    localStorage.removeItem('pendingGmailRequest');
-    localStorage.removeItem('pendingGmailLocked');
+    const text = element.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('✅ تم نسخ النص بنجاح');
+    }).catch(() => {
+        showToast('❌ فشل نسخ النص', true);
+    });
 }
 
 // ========================================
@@ -429,7 +420,6 @@ async function register() {
     setButtonLoading('registerBtn', false);
     
     if (result?.result === "success") {
-        await sendMessageToTelegram(`🆕 مستخدم جديد\n👤 الاسم: ${name}\n📱 رقم الهاتف: ${phone}\n🕐 الوقت: ${new Date().toLocaleString('ar-EG')}`);
         Swal.fire({
             icon: 'success',
             title: 'تم التسجيل بنجاح!',
@@ -506,7 +496,7 @@ async function login() {
         showMainScreen();
         startBalanceUpdates();
         
-        const savedRequest = loadPendingGmailRequest();
+        const savedRequest = loadPermanentGmailRequest();
         if (savedRequest && !currentGeneratedData && !isRequestLocked) {
             setTimeout(() => {
                 Swal.fire({
@@ -527,7 +517,7 @@ async function login() {
                         displayGmailData(currentGeneratedData);
                         document.getElementById('createModal').classList.remove('hidden');
                     } else {
-                        clearPendingGmailRequest();
+                        clearPermanentGmailRequest();
                     }
                 });
             }, 1000);
@@ -586,7 +576,7 @@ function logout() {
     }).then((result) => {
         if (result.isConfirmed) {
             if (isRequestLocked && currentGeneratedData) {
-                savePendingGmailRequest(currentGeneratedData);
+                saveGmailRequestPermanently(currentGeneratedData);
                 showToast('📦 تم حفظ طلب Gmail الخاص بك، يمكنك استئنافه لاحقاً');
             }
             stopBalanceUpdates();
@@ -665,71 +655,14 @@ function stopBalanceUpdates() {
 }
 
 // ========================================
-// نظام الحظر المؤقت
-// ========================================
-
-function checkTempBlock() {
-    if (currentBlocked) return { blocked: true, reason: "حسابك محظور نهائياً" };
-    if (tempBlockUntil && new Date() < tempBlockUntil) {
-        const remaining = Math.ceil((tempBlockUntil - new Date()) / 60000);
-        return { blocked: true, reason: `⚠️ ممنوع لمدة ${remaining} دقيقة` };
-    }
-    if (tempBlockUntil && new Date() >= tempBlockUntil) {
-        tempBlockUntil = null;
-        gmailCreationHistory = [];
-    }
-    return { blocked: false };
-}
-
-function recordGmailCreation() {
-    const now = new Date();
-    gmailCreationHistory.push(now);
-    const oneMinuteAgo = new Date(now.getTime() - 60000);
-    gmailCreationHistory = gmailCreationHistory.filter(t => t >= oneMinuteAgo);
-    if (gmailCreationHistory.length > 3) {
-        tempBlockUntil = new Date(now.getTime() + 3600000);
-        showToast(`⚠️ تم حظرك مؤقتاً لمدة ساعة بسبب إنشاء جميلات كثيرة!`, true);
-        return false;
-    }
-    return true;
-}
-
-// ========================================
-// إنشاء Gmail
+// إنشاء Gmail مع نظام الحظر المؤقت
 // ========================================
 
 function displayGmailData(data) {
-    document.getElementById('generatedName').textContent = data.name;
-    document.getElementById('generatedGmail').textContent = data.gmail;
-    document.getElementById('generatedPassword').textContent = data.password;
+    document.getElementById('generatedName').innerHTML = `${data.name} <button class="copy-btn" onclick="copyToClipboardFromSpan('generatedName')"><i class="fas fa-copy"></i></button>`;
+    document.getElementById('generatedGmail').innerHTML = `${data.gmail} <button class="copy-btn" onclick="copyToClipboardFromSpan('generatedGmail')"><i class="fas fa-copy"></i></button>`;
+    document.getElementById('generatedPassword').innerHTML = `${data.password} <button class="copy-btn" onclick="copyToClipboardFromSpan('generatedPassword')"><i class="fas fa-copy"></i></button>`;
     document.getElementById('generatedGenderAge').textContent = `${data.gender} / ${data.birthYear}`;
-}
-
-async function showCreateGmailModal() {
-    if (isRequestLocked && currentGeneratedData) {
-        displayGmailData(currentGeneratedData);
-        document.getElementById('createModal').classList.remove('hidden');
-        return;
-    }
-    
-    const block = checkTempBlock();
-    if (block.blocked) {
-        showToast(block.reason, true);
-        return;
-    }
-    if (currentBlocked) {
-        showToast('❌ حسابك محظور نهائياً!', true);
-        return;
-    }
-    
-    setButtonLoading('createGmailBtn', true);
-    currentGeneratedData = getRandomLocalData();
-    isRequestLocked = true;
-    savePendingGmailRequest(currentGeneratedData);
-    setButtonLoading('createGmailBtn', false);
-    
-    displayGmailData(currentGeneratedData);
-    document.getElementById('createModal').classList.remove('hidden');
 }
 
 async function changeGmail() {
@@ -755,13 +688,50 @@ async function changeGmail() {
     
     const newGmail = generateUniqueGmail();
     currentGeneratedData.gmail = newGmail;
-    savePendingGmailRequest(currentGeneratedData);
+    saveGmailRequestPermanently(currentGeneratedData);
     displayGmailData(currentGeneratedData);
     showToast('✅ تم تغيير البريد الإلكتروني بنجاح');
 }
 
+async function showCreateGmailModal() {
+    // فحص الحظر المؤقت أولاً
+    const blockCheck = checkTempBlock();
+    if (blockCheck.blocked) {
+        showToast(blockCheck.reason, true);
+        return;
+    }
+    
+    if (isRequestLocked && currentGeneratedData) {
+        displayGmailData(currentGeneratedData);
+        document.getElementById('createModal').classList.remove('hidden');
+        return;
+    }
+    
+    if (currentBlocked) {
+        showToast('❌ حسابك محظور نهائياً!', true);
+        return;
+    }
+    
+    setButtonLoading('createGmailBtn', true);
+    currentGeneratedData = getRandomLocalData();
+    isRequestLocked = true;
+    saveGmailRequestPermanently(currentGeneratedData);
+    setButtonLoading('createGmailBtn', false);
+    
+    displayGmailData(currentGeneratedData);
+    document.getElementById('createModal').classList.remove('hidden');
+}
+
 async function confirmGmailCreation() {
     if (!currentGeneratedData) return;
+    
+    // فحص الحظر المؤقت مرة أخرى
+    const blockCheck = checkTempBlock();
+    if (blockCheck.blocked) {
+        showToast(blockCheck.reason, true);
+        document.getElementById('createModal').classList.add('hidden');
+        return;
+    }
     
     const fileInput = document.getElementById('gmailScreenshot');
     if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
@@ -793,7 +763,7 @@ async function confirmGmailCreation() {
     });
     
     if (!confirmed.isConfirmed) {
-        savePendingGmailRequest(currentGeneratedData);
+        saveGmailRequestPermanently(currentGeneratedData);
         showToast('📦 تم حفظ طلب Gmail الخاص بك، يمكنك استئنافه لاحقاً', false);
         document.getElementById('createModal').classList.add('hidden');
         return;
@@ -806,67 +776,60 @@ async function confirmGmailCreation() {
     const fileNameSpan = document.getElementById('fileName');
     if (fileNameSpan) fileNameSpan.textContent = file.name;
     
-    // تحويل الصورة إلى Base64 لإرسالها إلى تليجرام
-    const reader = new FileReader();
-    reader.onloadend = async function() {
-        const base64data = reader.result.split(',')[1];
-        
-        // إرسال البيانات إلى Google Sheets
-        const result = await callAPI('submitGmail', {
-            phone: cleanPhone(currentUser.phone),
-            fullName: currentGeneratedData.name,
-            gmail: fullGmail,
-            password: currentGeneratedData.password,
-            price: gmailPrice
-        });
-        
-        if (!result?.success) {
-            setButtonLoading('confirmCreateBtn', false);
-            showToast(result?.error || 'حدث خطأ أثناء إرسال البيانات', true);
-            return;
-        }
-        
-        // إرسال الصورة إلى تليجرام
-        const telegramMessage = `📧 <b>طلب Gmail جديد</b>\n━━━━━━━━━━━━━━━━\n👤 <b>المستخدم:</b> ${currentGeneratedData.name}\n📱 <b>رقم الهاتف:</b> ${currentUser.phone}\n📧 <b>البريد:</b> ${fullGmail}\n🔑 <b>كلمة المرور:</b> ${currentGeneratedData.password}\n💰 <b>السعر:</b> ${gmailPrice} ج.م\n🕐 <b>التاريخ:</b> ${new Date().toLocaleString('ar-EG')}\n━━━━━━━━━━━━━━━━\n✅ في انتظار المراجعة`;
-        
-        await sendImageToTelegram(base64data, telegramMessage);
-        
-        // رفع الصورة إلى Google Drive (كنسخة احتياطية)
-        const formData = new FormData();
-        formData.append('action', 'uploadImage');
-        formData.append('phone', cleanPhone(currentUser.phone));
-        formData.append('gmail', fullGmail);
-        formData.append('imageBlob', file);
-        
-        try {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: formData
-            });
-        } catch (error) {
-            console.error('Upload error:', error);
-        }
-        
+    const result = await callAPI('submitGmail', {
+        phone: cleanPhone(currentUser.phone),
+        fullName: currentGeneratedData.name,
+        gmail: fullGmail,
+        password: currentGeneratedData.password,
+        price: gmailPrice
+    });
+    
+    if (!result?.success) {
         setButtonLoading('confirmCreateBtn', false);
-        recordGmailCreation();
-        await loadBalance();
+        showToast(result?.error || 'حدث خطأ أثناء إرسال البيانات', true);
+        return;
+    }
+    
+    // تسجيل محاولة إنشاء الجميل في سجل الحظر المؤقت
+    const canCreate = recordGmailCreation();
+    if (!canCreate) {
+        setButtonLoading('confirmCreateBtn', false);
         document.getElementById('createModal').classList.add('hidden');
-        clearPendingGmailRequest();
-        isRequestLocked = false;
-        currentGeneratedData = null;
-        
-        Swal.fire({
-            icon: 'success',
-            title: 'تم الإرسال بنجاح!',
-            html: 'سيتم مراجعة الجميل خلال 2-4 أيام.<br><br>📸 <strong>تذكير هام:</strong><br>يرجى الاحتفاظ بالصورة (سكرين شوت) لحين تحويل المبلغ.',
-            background: '#12172f',
-            color: '#fff',
-            confirmButtonColor: '#28a745',
-            timer: 4000,
-            showConfirmButton: true
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('action', 'uploadImage');
+    formData.append('phone', cleanPhone(currentUser.phone));
+    formData.append('gmail', fullGmail);
+    formData.append('imageBlob', file);
+    
+    try {
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: formData
         });
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+        console.error('Upload error:', error);
+    }
+    
+    setButtonLoading('confirmCreateBtn', false);
+    await loadBalance();
+    document.getElementById('createModal').classList.add('hidden');
+    clearPermanentGmailRequest();
+    isRequestLocked = false;
+    currentGeneratedData = null;
+    
+    Swal.fire({
+        icon: 'success',
+        title: 'تم الإرسال بنجاح!',
+        html: 'سيتم مراجعة الجميل خلال 2-4 أيام.<br><br>📸 <strong>تذكير هام:</strong><br>يرجى الاحتفاظ بالصورة (سكرين شوت) لحين تحويل المبلغ.',
+        background: '#12172f',
+        color: '#fff',
+        confirmButtonColor: '#28a745',
+        timer: 4000,
+        showConfirmButton: true
+    });
 }
 
 // ========================================
@@ -940,8 +903,6 @@ async function submitWithdrawRequest() {
     setButtonLoading('submitWithdrawBtn', false);
     
     if (result?.success) {
-        await sendMessageToTelegram(`💰 <b>طلب سحب جديد</b>\n━━━━━━━━━━━━━━━━\n📱 رقم الهاتف: ${currentUser.phone}\n🏦 المحفظة: ${wallet}\n💵 المبلغ: ${amount} ج.م\n💸 المصاريف: ${fee} ج.م\n✅ الصافي: ${amount} ج.م\n🕐 الوقت: ${new Date().toLocaleString('ar-EG')}\n━━━━━━━━━━━━━━━━\n⏳ في انتظار المراجعة`);
-        
         await loadBalance();
         document.getElementById('withdrawModal').classList.add('hidden');
         document.getElementById('walletNumber').value = '';
@@ -1174,7 +1135,7 @@ async function init() {
                 showMainScreen();
                 startBalanceUpdates();
                 
-                const savedRequest = loadPendingGmailRequest();
+                const savedRequest = loadPermanentGmailRequest();
                 if (savedRequest && !currentGeneratedData && !isRequestLocked) {
                     setTimeout(() => {
                         Swal.fire({
@@ -1195,7 +1156,7 @@ async function init() {
                                 displayGmailData(currentGeneratedData);
                                 document.getElementById('createModal').classList.remove('hidden');
                             } else {
-                                clearPendingGmailRequest();
+                                clearPermanentGmailRequest();
                             }
                         });
                     }, 1000);
@@ -1207,7 +1168,7 @@ async function init() {
             showLoginScreen();
         }
     } else {
-        showLoginScreen();
+        showRegisterScreen();
     }
 }
 
