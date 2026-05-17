@@ -340,35 +340,21 @@
             }
         }, 800);
     });
-</script>
-    <script>
-    // تشغيل الفيديو من ملف ثابت على الجهاز
+
     function playTutorialVideo() {
-        // ضع المسار الصحيح لملف الفيديو هنا
-        const videoPath = 'https://youtu.be/joEIk5UxcPI?si=t9bPC0i97wDtpsu4' // أو 'tutorial.mp4' لو كان في نفس المجلد
-        
-        Swal.fire({
-            title: '🎥 طريقة عمل الجميل للكسب',
-            html: `
-                <div style="text-align: center;">
-                    <video controls style="width: 100%; max-width: 450px; border-radius: 16px; margin: 10px 0;">
-                        <source src="${videoPath}" type="video/mp4">
-                        متصفحك لا يدعم تشغيل الفيديو
-                    </video>
-                    <p style="color: #aaa; font-size: 12px; margin-top: 10px;">شاهد الفيديو لمعرفة كيفية إنشاء حساب Gmail والربح</p>
-                </div>
-            `,
-            background: '#12172f',
-            color: '#fff',
-            showConfirmButton: true,
-            confirmButtonText: 'إغلاق',
-            confirmButtonColor: '#667eea',
-            width: '550px'
-        });
-    }
-    
-    // ربط زر الفيديو
-    document.getElementById('watchTutorialBtn')?.addEventListener('click', playTutorialVideo);
+    Swal.fire({
+        title: '🎥 طريقة عمل الجميل للكسب',
+        text: 'سيتم فتح الفيديو في نافذة جديدة',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'فتح الفيديو',
+        cancelButtonText: 'إلغاء'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.open('https://youtube.com/shorts/Gj-lncAqT18?si=4IBBaYfjvgMQwhKp', '_blank');
+        }
+    });
+}
     </script>
 </body>
     </html>
