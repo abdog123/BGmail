@@ -206,6 +206,13 @@
                 </div>
             </div>
 
+           <!-- زر الفيديو تحت جدول البيانات -->
+<div style="text-align: center; margin: 15px 0;">
+    <button id="watchTutorialBtn" class="btn-warning" style="background: #ff9800; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: bold;">
+        <i class="fas fa-play-circle"></i> طريقة عمل الجميل للكسب
+    </button>
+</div>
+            
             <div class="upload-area">
                 <label><i class="fas fa-camera"></i> صورة سكرين شوت</label>
                 <div class="file-input-wrapper">
@@ -334,5 +341,34 @@
         }, 800);
     });
 </script>
+    <script>
+    // تشغيل الفيديو من ملف ثابت على الجهاز
+    function playTutorialVideo() {
+        // ضع المسار الصحيح لملف الفيديو هنا
+        const videoPath = 'videos/tutorial.mp4'; // أو 'tutorial.mp4' لو كان في نفس المجلد
+        
+        Swal.fire({
+            title: '🎥 طريقة عمل الجميل للكسب',
+            html: `
+                <div style="text-align: center;">
+                    <video controls style="width: 100%; max-width: 450px; border-radius: 16px; margin: 10px 0;">
+                        <source src="${videoPath}" type="video/mp4">
+                        متصفحك لا يدعم تشغيل الفيديو
+                    </video>
+                    <p style="color: #aaa; font-size: 12px; margin-top: 10px;">شاهد الفيديو لمعرفة كيفية إنشاء حساب Gmail والربح</p>
+                </div>
+            `,
+            background: '#12172f',
+            color: '#fff',
+            showConfirmButton: true,
+            confirmButtonText: 'إغلاق',
+            confirmButtonColor: '#667eea',
+            width: '550px'
+        });
+    }
+    
+    // ربط زر الفيديو
+    document.getElementById('watchTutorialBtn')?.addEventListener('click', playTutorialVideo);
+    </script>
 </body>
     </html>
