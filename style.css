@@ -484,6 +484,140 @@ body {
     margin-right: 4px;
 }
 
+/* ========================================
+   نظام الدعوات الجديد
+   ======================================== */
+
+.referral-card {
+    background: rgba(15, 20, 45, 0.8);
+    backdrop-filter: blur(20px);
+    border-radius: 28px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.3s;
+}
+
+.referral-card:hover {
+    transform: translateY(-3px);
+    background: rgba(15, 20, 45, 0.9);
+}
+
+.referral-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.referral-header i {
+    font-size: 28px;
+    color: #28a745;
+}
+
+.referral-header h3 {
+    color: white;
+    margin: 0;
+    font-size: 20px;
+}
+
+.referral-code-box {
+    background: rgba(0,0,0,0.3);
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.referral-code-box span {
+    font-size: 24px;
+    font-weight: bold;
+    font-family: monospace;
+    letter-spacing: 2px;
+    color: #28a745;
+    background: rgba(40,167,69,0.1);
+    padding: 8px 16px;
+    border-radius: 12px;
+}
+
+.copy-referral-btn {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 30px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.copy-referral-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+}
+
+.referral-stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    flex: 1;
+    text-align: center;
+    background: rgba(255,255,255,0.05);
+    border-radius: 20px;
+    padding: 15px;
+    position: relative;
+}
+
+.stat-item small {
+    display: block;
+    font-size: 10px;
+    margin-top: 5px;
+    color: #28a745;
+}
+
+.stat-value {
+    display: block;
+    font-size: 28px;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.stat-label {
+    display: block;
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 5px;
+}
+
+.referral-info {
+    background: rgba(40,167,69,0.1);
+    border-radius: 16px;
+    padding: 12px;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+}
+
+.referral-info i {
+    color: #28a745;
+    margin-left: 8px;
+}
+
+.referral-info div {
+    display: inline-block;
+    text-align: right;
+}
+
 /* القائمة الرئيسية */
 .menu-grid {
     display: flex;
@@ -1057,4 +1191,12 @@ body {
     .modal-header h3 {
         font-size: 18px;
     }
-                }
+    
+    .referral-code-box span {
+        font-size: 18px;
+    }
+    
+    .stat-value {
+        font-size: 22px;
+    }
+   }
