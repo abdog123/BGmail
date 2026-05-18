@@ -20,7 +20,7 @@
 </div>
 
 <div id="app">
-    <!-- شاشة تسجيل الدخول (الصفحة الرئيسية) -->
+    <!-- شاشة تسجيل الدخول -->
     <div id="loginScreen" class="screen">
         <div class="glass-card">
             <div class="logo-container">
@@ -51,7 +51,7 @@
         </div>
     </div>
 
-    <!-- شاشة التسجيل -->
+    <!-- شاشة التسجيل مع حقل كود الدعوة -->
     <div id="registerScreen" class="screen hidden">
         <div class="glass-card">
             <div class="logo-container">
@@ -85,6 +85,12 @@
                 </div>
             </div>
             
+            <!-- حقل كود الدعوة -->
+            <div class="form-group">
+                <label><i class="fas fa-gift"></i> كود الدعوة (اختياري)</label>
+                <input type="text" id="regReferralCode" placeholder="أدخل كود الدعوة إن وجد" class="form-control" dir="ltr">
+            </div>
+            
             <button id="registerBtn" class="btn btn-primary btn-block"><i class="fas fa-check-circle"></i> إنشاء حساب</button>
             
             <div class="auth-footer">
@@ -93,7 +99,7 @@
         </div>
     </div>
 
-    <!-- الشاشة الرئيسية (لوحة التحكم) -->
+    <!-- الشاشة الرئيسية -->
     <div id="mainScreen" class="screen hidden">
         <div class="dashboard">
             <div class="dashboard-header">
@@ -124,6 +130,40 @@
                         <span class="balance-label">الرصيد المتجمد</span>
                         <span class="balance-amount" id="pendingBalance">0</span>
                         <span class="balance-currency">ج.م</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم الدعوات -->
+            <div class="referral-card">
+                <div class="referral-header">
+                    <i class="fas fa-users"></i>
+                    <h3>دعوة الأصدقاء</h3>
+                </div>
+                <div class="referral-content">
+                    <div class="referral-code-box">
+                        <span id="myReferralCode">---</span>
+                        <button class="copy-referral-btn">
+                            <i class="fas fa-copy"></i> نسخ الكود
+                        </button>
+                    </div>
+                    <div class="referral-stats">
+                        <div class="stat-item">
+                            <span class="stat-value" id="activeFriends">0</span>
+                            <span class="stat-label">الأصدقاء النشطين</span>
+                            <small>(أكملوا جميلين)</small>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="referralEarnings">0</span>
+                            <span class="stat-label">إجمالي الأرباح</span>
+                        </div>
+                    </div>
+                    <div class="referral-info">
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <strong>طريقة الربح من الدعوات:</strong><br>
+                            • 10 جنيه عندما يكمل صديقك أول جميلين مقبولين
+                        </div>
                     </div>
                 </div>
             </div>
@@ -169,7 +209,7 @@
     </div>
 </div>
 
-<!-- نافذة إنشاء Gmail -->
+<!-- باقي النوافذ (createModal, withdrawModal, logs) كما هي -->
 <div id="createModal" class="modal-overlay hidden">
     <div class="modal-container">
         <div class="modal-header">
@@ -205,14 +245,11 @@
                     <span class="data-value" id="generatedGenderAge">---</span>
                 </div>
             </div>
-
-           <!-- زر الفيديو تحت جدول البيانات -->
-<div style="text-align: center; margin: 15px 0;">
-    <button id="watchTutorialBtn" class="btn-warning" style="background: #ff9800; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: bold;">
-        <i class="fas fa-play-circle"></i> طريقة عمل الجميل للكسب
-    </button>
-</div>
-            
+            <div style="text-align: center; margin: 15px 0;">
+                <button id="watchTutorialBtn" class="btn-warning" style="background: #ff9800; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: bold;">
+                    <i class="fas fa-play-circle"></i> طريقة عمل الجميل للكسب
+                </button>
+            </div>
             <div class="upload-area">
                 <label><i class="fas fa-camera"></i> صورة سكرين شوت</label>
                 <div class="file-input-wrapper">
@@ -221,7 +258,6 @@
                     <span id="fileName" class="file-name">لم يتم اختيار ملف</span>
                 </div>
             </div>
-
             <div class="warning-box">
                 <i class="fas fa-exclamation-triangle"></i>
                 <div class="warning-text">
@@ -229,13 +265,11 @@
                     <p>احتفظ بالصورة لحين تحويل الرصيد.</p>
                 </div>
             </div>
-
             <button id="confirmCreateBtn" class="btn btn-danger btn-block"><i class="fas fa-check-circle"></i> تأكيد وإرسال</button>
         </div>
     </div>
 </div>
 
-<!-- نافذة السحب -->
 <div id="withdrawModal" class="modal-overlay hidden">
     <div class="modal-container">
         <div class="modal-header">
@@ -267,7 +301,6 @@
     </div>
 </div>
 
-<!-- نافذة سجلات الجميلات -->
 <div id="gmailLogsModal" class="modal-overlay hidden">
     <div class="modal-container modal-large">
         <div class="modal-header">
@@ -275,9 +308,7 @@
             <button class="close-modal"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
-            <div class="notice-box">
-                <i class="fas fa-clock"></i> يتم مراجعة الجميلات خلال 2 إلى 4 أيام
-            </div>
+            <div class="notice-box"><i class="fas fa-clock"></i> يتم مراجعة الجميلات خلال 2 إلى 4 أيام</div>
             <div class="filter-group">
                 <select id="gmailStatusFilter">
                     <option value="all">📋 الكل</option>
@@ -286,14 +317,11 @@
                     <option value="Rejected">❌ مرفوض</option>
                 </select>
             </div>
-            <div class="table-wrapper" id="gmailLogsBody">
-                <div class="empty-state"><i class="fas fa-inbox"></i> لا توجد جميلات</div>
-            </div>
+            <div class="table-wrapper" id="gmailLogsBody"><div class="empty-state"><i class="fas fa-inbox"></i> لا توجد جميلات</div></div>
         </div>
     </div>
 </div>
 
-<!-- نافذة سجلات السحب -->
 <div id="withdrawLogsModal" class="modal-overlay hidden">
     <div class="modal-container modal-large">
         <div class="modal-header">
@@ -309,9 +337,7 @@
                     <option value="Rejected">❌ مرفوض</option>
                 </select>
             </div>
-            <div class="table-wrapper" id="withdrawLogsBody">
-                <div class="empty-state"><i class="fas fa-inbox"></i> لا توجد سحوبات</div>
-            </div>
+            <div class="table-wrapper" id="withdrawLogsBody"><div class="empty-state"><i class="fas fa-inbox"></i> لا توجد سحوبات</div></div>
         </div>
     </div>
 </div>
@@ -320,60 +346,24 @@
 
 <script src="script.js"></script>
 <script>
-    // إصلاح مشكلة شاشة التحميل - إخفاؤها بعد تحميل الصفحة مباشرة
     window.addEventListener('DOMContentLoaded', function() {
         setTimeout(function() {
             var loadingScreen = document.getElementById('loadingScreen');
-            if (loadingScreen) {
-                loadingScreen.style.display = 'none';
-            }
+            if (loadingScreen) loadingScreen.style.display = 'none';
         }, 800);
     });
+
+    function playTutorialVideo() {
+        const shortsUrl = 'https://youtube.com/shorts/Gj-lncAqT18?si=4IBBaYfjvgMQwhKp';
+        const videoId = shortsUrl.split('/shorts/')[1].split('?')[0];
+        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        Swal.fire({
+            title: '🎥 طريقة عمل الجميل للكسب',
+            html: `<div style="text-align: center;"><iframe width="100%" height="400" src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><p style="color: #aaa; font-size: 12px; margin-top: 10px;">شاهد الفيديو لمعرفة كيفية إنشاء حساب Gmail والربح</p></div>`,
+            background: '#12172f', color: '#fff', showConfirmButton: true, confirmButtonText: 'إغلاق', width: '650px'
+        });
+    }
+    document.getElementById('watchTutorialBtn')?.addEventListener('click', playTutorialVideo);
 </script>
-    <script>
-    // إصلاح مشكلة شاشة التحميل - إخفاؤها بعد تحميل الصفحة مباشرة
-    window.addEventListener('DOMContentLoaded', function() {
-        setTimeout(function() {
-            var loadingScreen = document.getElementById('loadingScreen');
-            if (loadingScreen) {
-                loadingScreen.style.display = 'none';
-            }
-        }, 800);
-    });
-
-
-        function playTutorialVideo() {
-    // الرابط اللي انت حاططه
-    const shortsUrl = 'https://youtube.com/shorts/Gj-lncAqT18?si=4IBBaYfjvgMQwhKp';
-    
-    // تحويل رابط Shorts إلى رابط embed عادي
-    const videoId = shortsUrl.split('/shorts/')[1].split('?')[0];
-    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-    
-    Swal.fire({
-        title: '🎥 طريقة عمل الجميل للكسب',
-        html: `
-            <div style="text-align: center;">
-                <iframe width="100%" height="400" 
-                        src="${embedUrl}" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                </iframe>
-                <p style="color: #aaa; font-size: 12px; margin-top: 10px;">
-                    شاهد الفيديو لمعرفة كيفية إنشاء حساب Gmail والربح
-                </p>
-            </div>
-        `,
-        background: '#12172f',
-        color: '#fff',
-        showConfirmButton: true,
-        confirmButtonText: 'إغلاق',
-        width: '650px'
-    });
-}
-
-document.getElementById('watchTutorialBtn')?.addEventListener('click', playTutorialVideo);
-    </script>
 </body>
-    </html>
+</html>
