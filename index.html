@@ -354,20 +354,20 @@
     });
 
 function playTutorialVideo() {
-    // رابط Google Drive (رابط التضمين)
+    // رابط Google Drive المباشر للتضمين بدون مشاكل
     const videoUrl = 'https://drive.google.com/file/d/19OL8MBvngUWv03CYDnnEIyHOsM-feo0P/preview';
     
     Swal.fire({
         title: '🎥 طريقة عمل الجميل للكسب',
         html: `
-            <div style="text-align: center; direction: ltr;">
-                <iframe width="100%" height="350" 
+            <div style="text-align: center;">
+                <iframe width="100%" height="400" 
                         src="${videoUrl}" 
                         frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allow="autoplay"
                         allowfullscreen>
                 </iframe>
-                <p style="color: #aaa; font-size: 13px; margin-top: 15px; text-align: center; direction: rtl;">
+                <p style="color: #aaa; font-size: 13px; margin-top: 15px; text-align: center;">
                     📌 شاهد الفيديو لمعرفة كيفية إنشاء حساب Gmail والربح
                 </p>
             </div>
@@ -377,10 +377,15 @@ function playTutorialVideo() {
         showConfirmButton: true,
         confirmButtonText: 'إغلاق',
         confirmButtonColor: '#667eea',
-        width: '700px',
-        padding: '1rem',
+        width: '750px',
         showCloseButton: true,
-        closeButtonColor: '#dc3545'
+        didOpen: () => {
+            // إخفاء أي عناصر غريبة تظهر
+            const iframe = document.querySelector('.swal2-html-container iframe');
+            if (iframe) {
+                iframe.style.borderRadius = '12px';
+            }
+        }
     });
 }
     
