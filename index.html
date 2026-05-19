@@ -1,4 +1,4 @@
-9<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -10,6 +10,13 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
+
+<!-- خلفية متحركة -->
+<div class="background-3d">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
 
 <!-- شاشة تحميل -->
 <div id="loadingScreen" class="loading-screen">
@@ -162,7 +169,8 @@
                         <i class="fas fa-info-circle"></i>
                         <div>
                             <strong>طريقة الربح من الدعوات:</strong><br>
-                            • 10 جنيه عندما يكمل صديقك أول جميلين مقبولين
+                            • 10 جنيه عندما يكمل صديقك أول جميلين مقبولين<br>
+                            • العمولة: 2% من كل جميل لمدعوك
                         </div>
                     </div>
                 </div>
@@ -209,7 +217,7 @@
     </div>
 </div>
 
-<!-- باقي النوافذ (createModal, withdrawModal, logs) كما هي -->
+<!-- النوافذ المنبثقة -->
 <div id="createModal" class="modal-overlay hidden">
     <div class="modal-container">
         <div class="modal-header">
@@ -245,11 +253,13 @@
                     <span class="data-value" id="generatedGenderAge">---</span>
                 </div>
             </div>
+            
             <div style="text-align: center; margin: 15px 0;">
                 <button id="watchTutorialBtn" class="btn-warning" style="background: #ff9800; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: bold;">
                     <i class="fas fa-play-circle"></i> طريقة عمل الجميل للكسب
                 </button>
             </div>
+            
             <div class="upload-area">
                 <label><i class="fas fa-camera"></i> صورة سكرين شوت</label>
                 <div class="file-input-wrapper">
@@ -258,6 +268,7 @@
                     <span id="fileName" class="file-name">لم يتم اختيار ملف</span>
                 </div>
             </div>
+            
             <div class="warning-box">
                 <i class="fas fa-exclamation-triangle"></i>
                 <div class="warning-text">
@@ -265,6 +276,7 @@
                     <p>احتفظ بالصورة لحين تحويل الرصيد.</p>
                 </div>
             </div>
+            
             <button id="confirmCreateBtn" class="btn btn-danger btn-block"><i class="fas fa-check-circle"></i> تأكيد وإرسال</button>
         </div>
     </div>
@@ -317,7 +329,9 @@
                     <option value="Rejected">❌ مرفوض</option>
                 </select>
             </div>
-            <div class="table-wrapper" id="gmailLogsBody"><div class="empty-state"><i class="fas fa-inbox"></i> لا توجد جميلات</div></div>
+            <div class="table-wrapper" id="gmailLogsBody">
+                <div class="empty-state"><i class="fas fa-inbox"></i> لا توجد جميلات</div>
+            </div>
         </div>
     </div>
 </div>
@@ -337,7 +351,9 @@
                     <option value="Rejected">❌ مرفوض</option>
                 </select>
             </div>
-            <div class="table-wrapper" id="withdrawLogsBody"><div class="empty-state"><i class="fas fa-inbox"></i> لا توجد سحوبات</div></div>
+            <div class="table-wrapper" id="withdrawLogsBody">
+                <div class="empty-state"><i class="fas fa-inbox"></i> لا توجد سحوبات</div>
+            </div>
         </div>
     </div>
 </div>
@@ -346,48 +362,47 @@
 
 <script src="script.js"></script>
 <script>
+    // إصلاح مشكلة شاشة التحميل
     window.addEventListener('DOMContentLoaded', function() {
         setTimeout(function() {
             var loadingScreen = document.getElementById('loadingScreen');
-            if (loadingScreen) loadingScreen.style.display = 'none';
-        }, 800);
-    });
-
-function playTutorialVideo() {
-    // رابط Google Drive المباشر للتضمين بدون مشاكل
-    const videoUrl = 'https://drive.google.com/file/d/19OL8MBvngUWv03CYDnnEIyHOsM-feo0P/preview';
-    
-    Swal.fire({
-        title: '🎥 طريقة عمل الجميل للكسب',
-        html: `
-            <div style="text-align: center;">
-                <iframe width="100%" height="400" 
-                        src="${videoUrl}" 
-                        frameborder="0" 
-                        allow="autoplay"
-                        allowfullscreen>
-                </iframe>
-                <p style="color: #aaa; font-size: 13px; margin-top: 15px; text-align: center;">
-                    📌 شاهد الفيديو لمعرفة كيفية إنشاء حساب Gmail والربح
-                </p>
-            </div>
-        `,
-        background: '#12172f',
-        color: '#fff',
-        showConfirmButton: true,
-        confirmButtonText: 'إغلاق',
-        confirmButtonColor: '#667eea',
-        width: '750px',
-        showCloseButton: true,
-        didOpen: () => {
-            // إخفاء أي عناصر غريبة تظهر
-            const iframe = document.querySelector('.swal2-html-container iframe');
-            if (iframe) {
-                iframe.style.borderRadius = '12px';
+            if (loadingScreen) {
+                loadingScreen.style.opacity = '0';
+                setTimeout(function() {
+                    loadingScreen.style.display = 'none';
+                }, 500);
             }
-        }
+        }, 1000);
     });
-}
+    
+    // دالة تشغيل الفيديو التعليمي
+    function playTutorialVideo() {
+        const videoUrl = 'https://drive.google.com/file/d/19OL8MBvngUWv03CYDnnEIyHOsM-feo0P/preview';
+        
+        Swal.fire({
+            title: '🎥 طريقة عمل الجميل للكسب',
+            html: `
+                <div style="text-align: center;">
+                    <iframe width="100%" height="400" 
+                            src="${videoUrl}" 
+                            frameborder="0" 
+                            allow="autoplay; fullscreen"
+                            allowfullscreen>
+                    </iframe>
+                    <p style="color: #aaa; font-size: 13px; margin-top: 15px; text-align: center;">
+                        📌 شاهد الفيديو لمعرفة كيفية إنشاء حساب Gmail والربح
+                    </p>
+                </div>
+            `,
+            background: '#12172f',
+            color: '#fff',
+            showConfirmButton: true,
+            confirmButtonText: 'إغلاق',
+            confirmButtonColor: '#667eea',
+            width: '750px',
+            showCloseButton: true
+        });
+    }
     
     document.getElementById('watchTutorialBtn')?.addEventListener('click', playTutorialVideo);
 </script>
