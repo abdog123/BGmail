@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Genezis Gmail | اكسب فلوس من موبايلك</title>
+<meta name="description" content="حمّل تطبيق Genezis Gmail، أنشئ حسابات Gmail واكسب رصيد تسحبه على محفظتك. سجّل في دقيقة وابدأ النهاردة.">
+<meta name="theme-color" content="#075E54">
+<meta property="og:title" content="Genezis Gmail | اكسب فلوس من موبايلك">
+<meta property="og:description" content="أنشئ حسابات Gmail واكسب رصيد تسحبه على محفظتك. حمّل التطبيق مجانًا.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --d:#075E54; --g:#128C7E; --l:#25D366; --gold:#FFC83D;
+  --bg:#f3f8f6; --card:#fff; --tx:#10231f; --mu:#5d726d; --ln:#dce8e4;
+  --shadow:0 10px 30px rgba(7,94,84,.12);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#07130f; --card:#0e1f1a; --tx:#eaf5f1; --mu:#93aaa3; --ln:#1b332c; --shadow:0 10px 30px rgba(0,0,0,.4)}
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Cairo',Tahoma,sans-serif;background:var(--bg);color:var(--tx);line-height:1.7;-webkit-font-smoothing:antialiased;padding-bottom:84px}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1080px;margin:0 auto;padding:0 18px}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--ln)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:19px}
+.logo i{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--d),var(--l));display:grid;place-items:center;color:#fff;font-style:normal;font-size:18px}
+.nav-btn{background:var(--d);color:#fff;padding:8px 18px;border-radius:999px;font-weight:700;font-size:14px}
+
+/* HERO */
+.hero{background:radial-gradient(1200px 500px at 80% -10%,#1fae8f55,transparent),linear-gradient(160deg,#04382f,var(--d) 45%,var(--g));color:#fff;overflow:hidden;position:relative}
+.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:30px;align-items:center;padding-top:56px;padding-bottom:64px}
+.badge{display:inline-flex;gap:8px;align-items:center;background:#ffffff1f;border:1px solid #ffffff33;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:18px}
+.badge b{width:8px;height:8px;background:var(--l);border-radius:50%;box-shadow:0 0 0 4px #25d36644;animation:p 1.8s infinite}
+@keyframes p{50%{box-shadow:0 0 0 8px #25d36600}}
+h1{font-size:clamp(30px,5.6vw,52px);line-height:1.25;font-weight:900;margin-bottom:16px}
+h1 em{font-style:normal;color:var(--gold)}
+.hero p.lead{font-size:clamp(16px,2.2vw,19px);opacity:.92;max-width:520px;margin-bottom:26px}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font:inherit;font-weight:900;font-size:17px;padding:15px 28px;border-radius:16px;border:0;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.btn:active{transform:scale(.97)}
+.btn-main{background:linear-gradient(135deg,var(--gold),#ff9f1c);color:#3a2600;box-shadow:0 10px 26px rgba(255,170,30,.4)}
+.btn-main:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(255,170,30,.5)}
+.btn-ghost{background:#ffffff1c;color:#fff;border:1px solid #ffffff44}
+.mini{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;font-size:14px;opacity:.9}
+.mini span::before{content:"✓ ";color:var(--l);font-weight:900}
+
+/* phone mock */
+.phone{width:min(290px,80%);margin:0 auto;background:#0b0f0e;border-radius:38px;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.45);transform:rotate(-3deg)}
+.screen{background:var(--bg);color:var(--tx);border-radius:30px;padding:16px;min-height:430px}
+.s-bal{background:linear-gradient(135deg,var(--d),var(--g));color:#fff;border-radius:18px;padding:16px;margin-bottom:12px}
+.s-bal small{opacity:.85;font-size:12px}
+.s-bal strong{display:block;font-size:30px;font-weight:900}
+.s-row{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:11px 13px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600}
+.s-row u{text-decoration:none;color:#fff;background:var(--g);padding:3px 10px;border-radius:999px;font-size:11px}
+.s-btn{background:linear-gradient(135deg,var(--d),var(--g));color:#fff;text-align:center;border-radius:14px;padding:12px;font-weight:800;font-size:14px;margin-top:6px}
+
+/* SECTIONS */
+section{padding:64px 0}
+.sec-h{text-align:center;max-width:600px;margin:0 auto 38px}
+.sec-h small{color:var(--g);font-weight:800;letter-spacing:.5px}
+.sec-h h2{font-size:clamp(26px,4vw,36px);font-weight:900;line-height:1.35;margin:4px 0 8px}
+.sec-h p{color:var(--mu)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:22px;padding:24px;box-shadow:var(--shadow);transition:transform .2s}
+.card:hover{transform:translateY(-4px)}
+.ic{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#d5f7e8,#b6efd6);display:grid;place-items:center;font-size:26px;margin-bottom:14px}
+@media (prefers-color-scheme:dark){.ic{background:#143a2f}}
+.card h3{font-size:18px;font-weight:800;margin-bottom:4px}
+.card p{color:var(--mu);font-size:15px}
+
+/* steps */
+.steps{counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.step{position:relative;background:var(--card);border:1px solid var(--ln);border-radius:22px;padding:56px 22px 22px;text-align:center}
+.step::before{counter-increment:s;content:counter(s);position:absolute;top:-18px;left:50%;transform:translateX(-50%);width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--d),var(--l));color:#fff;font-weight:900;font-size:20px;display:grid;place-items:center;box-shadow:0 8px 18px rgba(18,140,126,.4)}
+.step{margin-top:20px}
+.step h3{font-size:17px;font-weight:800}
+.step p{color:var(--mu);font-size:14.5px}
+
+/* referral band */
+.band{background:linear-gradient(135deg,#04382f,var(--g));color:#fff;border-radius:30px;padding:40px 28px;display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center;overflow:hidden;position:relative}
+.band h2{font-size:clamp(24px,4vw,34px);font-weight:900;line-height:1.35;margin-bottom:10px}
+.band p{opacity:.92}
+.band ul{list-style:none;margin-top:14px}
+.band li{padding:4px 0;font-weight:600}
+.band li::before{content:"🎁 "}
+.coins{font-size:90px;text-align:center;filter:drop-shadow(0 10px 20px rgba(0,0,0,.3))}
+
+/* faq */
+details{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:16px 20px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:800;list-style:none;display:flex;justify-content:space-between;gap:10px}
+summary::after{content:"+";color:var(--g);font-size:22px;line-height:1}
+details[open] summary::after{content:"−"}
+details p{color:var(--mu);margin-top:10px;font-size:15px}
+
+/* final */
+.final{text-align:center;background:linear-gradient(160deg,#04382f,var(--g));color:#fff;border-radius:30px;padding:50px 22px}
+.final h2{font-size:clamp(26px,4.5vw,38px);font-weight:900;margin-bottom:8px}
+.final p{opacity:.9;margin-bottom:22px}
+.install{margin-top:20px;font-size:13.5px;opacity:.85}
+
+footer{text-align:center;color:var(--mu);font-size:13px;padding:30px 18px 10px}
+
+/* sticky CTA */
+.sticky{position:fixed;inset:auto 0 0 0;z-index:30;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);border-top:1px solid var(--ln);display:flex;gap:12px;align-items:center;justify-content:center}
+.sticky span{font-weight:700;font-size:14px}
+.sticky .btn{padding:11px 24px;font-size:15px;border-radius:14px}
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:#10231f;color:#fff;padding:12px 20px;border-radius:14px;font-size:14px;opacity:0;pointer-events:none;transition:.3s;z-index:40;max-width:90%;text-align:center}
+.toast.show{opacity:1}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}.badge b{animation:none}html{scroll-behavior:auto}}
+
+@media (max-width:820px){
+  .hero .wrap,.band{grid-template-columns:1fr}
+  .hero .wrap{padding-top:36px;text-align:center}
+  .hero p.lead{margin-inline:auto}
+  .cta-row,.mini{justify-content:center}
+  .phone{transform:none;margin-top:10px}
+  .coins{font-size:64px}
+  section{padding:48px 0}
+  .sticky span{display:none}
+  .sticky .btn{width:100%}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="#top"><i>G</i> Genezis Gmail</a>
+    <a class="nav-btn dl" href="#">حمّل الآن</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <div class="badge"><b></b> متاح الآن لأندرويد</div>
+      <h1>حوّل موبايلك لمصدر <em>دخل إضافي</em> في دقايق</h1>
+      <p class="lead">أنشئ حسابات Gmail بخطوات بسيطة، اجمع رصيدك داخل التطبيق، واسحب أرباحك على محفظتك الإلكترونية.</p>
+      <div class="cta-row">
+        <a class="btn btn-main dl" href="#">⬇️ حمّل التطبيق مجانًا</a>
+        <a class="btn btn-ghost" href="#how">إزاي بيشتغل؟</a>
+      </div>
+      <div class="mini">
+        <span>تسجيل مجاني</span>
+        <span>سحب على المحفظة</span>
+        <span>إشعارات فورية</span>
+      </div>
+    </div>
+
+    <div class="rv">
+      <div class="phone" aria-hidden="true">
+        <div class="screen">
+          <div class="s-bal"><small>الرصيد المتاح</small><strong>0.00 ج.م</strong></div>
+          <div class="s-row">إنشاء حساب Gmail <u>جديد</u></div>
+          <div class="s-row">قيد المراجعة <u>⏳</u></div>
+          <div class="s-row">دعوة الأصدقاء <u>🎁</u></div>
+          <div class="s-btn">سحب الأموال</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="why">
+  <div class="wrap">
+    <div class="sec-h rv">
+      <small>ليه Genezis؟</small>
+      <h2>كل اللي تحتاجه عشان تبدأ</h2>
+      <p>تطبيق خفيف وسريع، مصمم عشان تكسب من غير تعقيد.</p>
+    </div>
+    <div class="grid">
+      <div class="card rv"><div class="ic">⚡</div><h3>رصيد لحظي</h3><p>الرصيد بيتحدّث تلقائيًا كل ثواني، وبتشوف إضافة أرباحك أول بأول.</p></div>
+      <div class="card rv"><div class="ic">🔔</div><h3>إشعارات فورية</h3><p>تتبلّغ على طول بقبول طلبك أو إضافة رصيد، حتى لو التطبيق مقفول.</p></div>
+      <div class="card rv"><div class="ic">💸</div><h3>سحب سهل</h3><p>ادخل رقم محفظتك واطلب السحب، وبتتابع حالة كل طلب من سجل السحب.</p></div>
+      <div class="card rv"><div class="ic">🤝</div><h3>مكافآت الدعوة</h3><p>ادعُ أصحابك بكودك الخاص واكسب مكافأة وعمولة من نشاطهم.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="how" style="padding-top:20px">
+  <div class="wrap">
+    <div class="sec-h rv">
+      <small>4 خطوات بس</small>
+      <h2>إزاي تبدأ تكسب؟</h2>
+    </div>
+    <div class="steps">
+      <div class="step rv"><h3>حمّل وثبّت</h3><p>نزّل ملف APK وثبّته على موبايلك الأندرويد.</p></div>
+      <div class="step rv"><h3>سجّل حسابك</h3><p>رقم موبايل وكلمة مرور وخلاص، التسجيل مجاني.</p></div>
+      <div class="step rv"><h3>أنشئ حساب Gmail</h3><p>اتبع البيانات اللي بتظهرلك في التطبيق وارفع لقطة شاشة للتأكيد.</p></div>
+      <div class="step rv"><h3>اسحب أرباحك</h3><p>بعد المراجعة يتضاف الرصيد، وتطلب السحب على محفظتك.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="band rv">
+      <div>
+        <h2>كبّر دخلك بدعوة أصحابك</h2>
+        <p>كل صاحب تدعوه بكودك بيزوّد أرباحك:</p>
+        <ul>
+          <li>مكافأة عند نشاط صديقك</li>
+          <li>عمولة من كل حساب مقبول يعمله</li>
+          <li>كود دعوة خاص بيك جوه التطبيق</li>
+        </ul>
+        <div style="margin-top:22px"><a class="btn btn-main dl" href="#">ابدأ دلوقتي</a></div>
+      </div>
+      <div class="coins" aria-hidden="true">💰</div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" style="padding-top:20px">
+  <div class="wrap" style="max-width:760px">
+    <div class="sec-h rv"><small>أسئلة شائعة</small><h2>عندك استفسار؟</h2></div>
+    <details class="rv"><summary>التطبيق مجاني؟</summary><p>أيوه، التحميل والتسجيل مجانيين تمامًا.</p></details>
+    <details class="rv"><summary>مدة مراجعة الطلبات قد إيه؟</summary><p>المراجعة بتاخد عادةً من 2 لـ 4 أيام، والمبلغ بيفضل مجمّد لحد ما الطلب يتراجع ويتقبل.</p></details>
+    <details class="rv"><summary>إزاي أسحب فلوسي؟</summary><p>من داخل التطبيق اختر "سحب الأموال"، أدخل المبلغ ورقم المحفظة. الحد الأدنى للسحب والمصاريف بتظهرلك في شاشة السحب.</p></details>
+    <details class="rv"><summary>محتاج إنترنت؟</summary><p>أيوه، التطبيق بيشتغل أونلاين عشان الرصيد والإشعارات تتحدّث لحظيًا.</p></details>
+    <details class="rv"><summary>الأرباح مضمونة؟</summary><p>الأرباح بتتضاف على الطلبات المقبولة بعد المراجعة فقط، وبتختلف حسب نشاطك. مفيش أرباح من غير طلبات مقبولة.</p></details>
+    <details class="rv"><summary>التطبيق لأي أجهزة؟</summary><p>أجهزة أندرويد 5.0 فما فوق.</p></details>
+  </div>
+</section>
+
+<section style="padding-top:10px">
+  <div class="wrap">
+    <div class="final rv">
+      <h2>جاهز تبدأ رحلتك؟ 🚀</h2>
+      <p>حمّل Genezis Gmail دلوقتي وسجّل حسابك في أقل من دقيقة.</p>
+      <a class="btn btn-main dl" href="#">⬇️ تحميل APK</a>
+      <div class="install">لو ظهرلك تحذير أثناء التثبيت: فعّل "السماح بالتثبيت من هذا المصدر" من إعدادات الموبايل.</div>
+    </div>
+  </div>
+</section>
+
+<footer>© <span id="y"></span> Genezis Gmail — جميع الحقوق محفوظة</footer>
+
+<div class="sticky">
+  <span>جاهز تبدأ تكسب؟</span>
+  <a class="btn btn-main dl" href="#">⬇️ حمّل التطبيق</a>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ====== عدّل الرابط ده بس ======
+   لو رفعت الـ APK في نفس الريبو بجانب index.html سيب الاسم كده.
+   أو حط رابط Release مباشر: https://github.com/USER/REPO/releases/latest/download/GenezisApp.apk */
+const APK_URL = "GenezisApp.apk";
+
+document.querySelectorAll(".dl").forEach(a=>{
+  a.href = APK_URL; a.setAttribute("download","GenezisApp.apk");
+  a.addEventListener("click",()=>{
+    const t=document.getElementById("toast");
+    if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){
+      t.textContent="التطبيق متاح لأجهزة أندرويد فقط حاليًا";
+    }else{
+      t.textContent="بدأ التحميل… افتح الملف بعد انتهائه لتثبيته";
+    }
+    t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),3500);
+  });
+});
+document.getElementById("y").textContent = new Date().getFullYear();
+const io = new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll(".rv").forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
